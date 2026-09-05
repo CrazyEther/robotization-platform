@@ -1,5 +1,22 @@
 import {test,expect} from '@playwright/test';
 import catalog from '../../data/catalog.json' with {type:'json'};
+test('manufacturer EFEU geometry renders in WebGL',async({page},info)=>{
+ test.setTimeout(90000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');await page.getByRole('navigation',{name:'Шаги оценки'}).getByRole('button').nth(3).click();
+ await page.getByRole('button',{name:'Рассмотреть мобильную платформу в 3D'}).click();
+ await expect(page.locator('canvas[data-loaded="true"]')).toBeVisible({timeout:60000});
+ await page.locator('.spatial-canvas').screenshot({path:'output/efeu-'+info.project.name+'.png'});
+ expect(errors).toEqual([]);
+});
+test('client report download and spatial data validation',async({page})=>{
+ await page.goto('/');
+ const waiting=page.waitForEvent('download');await page.getByRole('button',{name:'Отчёт для обсуждения'}).click();const file=await waiting;expect(file.suggestedFilename()).toBe('assessment-report.html');
+ await page.getByRole('navigation',{name:'Шаги оценки'}).getByRole('button').nth(3).click();
+ await expect(page.getByRole('heading',{name:'Склад в 3D'})).toBeVisible();
+ await page.getByLabel('Загрузить сцену JSON').setInputFiles({name:'empty.json',mimeType:'application/json',buffer:Buffer.from('{}')});
+ await expect(page.getByRole('alert')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
 test('real catalog → comparison → honest incomplete economy → event gate',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
  await expect(page.getByRole('heading',{name:'Найдите точку для автоматизации'})).toBeVisible();

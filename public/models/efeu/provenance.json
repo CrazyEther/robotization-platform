@@ -1,0 +1,184 @@
+{
+  "name": "EFEU mobile platform",
+  "publisher": "SEW-EURODRIVE",
+  "source": "https://github.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/tree/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/",
+  "commit": "f9559a0a96bb64beffbf7501d29210c742aefc6e",
+  "observedAt": "2026-09-05T16:25:02.798727+00:00",
+  "license": "MIT",
+  "attribution": "Copyright (c) 2025 SEW-EURODRIVE, Authors: Yannick Wunderle, Leon Schönfeld",
+  "mappingVersion": "xacro-to-urdf-1",
+  "changes": "Expanded authored xacro macros and rewrote package URIs to local asset URLs. No facility layout or motion generated.",
+  "derivedSha256": "5c585447bc8f556cc1cb02a320ab4cbc61aca432cd83c2154df214f0a6ab5892",
+  "files": [
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/LICENSE",
+      "sha256": "81fd6120cf5ba302fe084e868bb80e283fc3bb5176eac36bb2a9ebd7c4cd6934",
+      "bytes": 1113
+    },
+    {
+      "path": "meshes/efeu_Pendelachse.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_Pendelachse.dae",
+      "sha256": "8841b4a60e031b4478ff4388fadfcf6a4ad19e12dc9318ef710e76e50c0ea840",
+      "bytes": 18096
+    },
+    {
+      "path": "meshes/efeu_Pendelachse_1.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_Pendelachse_1.dae",
+      "sha256": "75a6e60dc0e7fe7217df47b2bf47d52857c30615c3eb048a313c5d504337a856",
+      "bytes": 18093
+    },
+    {
+      "path": "meshes/efeu_Pendelachse_2.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_Pendelachse_2.dae",
+      "sha256": "d00f6658a5634651d47d7797a9a438101f6be251158b226dfbbea1488fa47129",
+      "bytes": 18431
+    },
+    {
+      "path": "meshes/efeu_Rad.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_Rad.dae",
+      "sha256": "16c879743955b2ff1636699854f66758575a2ac122224be63366523de08c7466",
+      "bytes": 2085715
+    },
+    {
+      "path": "meshes/efeu_fahrwerk1_collision.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk1_collision.dae",
+      "sha256": "a3ea3b90321ab59d8863ea8d74764f16bd45a0f2d8679a7339682250cb64137b",
+      "bytes": 6335
+    },
+    {
+      "path": "meshes/efeu_fahrwerk1_visual.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk1_visual.dae",
+      "sha256": "3e4cf1d5777332dbcd30bc0e6b6829ed373bc7bc9b69a70459ea5c15e73d881b",
+      "bytes": 334644
+    },
+    {
+      "path": "meshes/efeu_fahrwerk1_visual_1.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk1_visual_1.dae",
+      "sha256": "1e8f17f1e6bfcd2512b06708d27e8309acf434d6f633a8e3a518c3946e900b36",
+      "bytes": 337764
+    },
+    {
+      "path": "meshes/efeu_fahrwerk1_visual_test.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk1_visual_test.dae",
+      "sha256": "8e2fc32825529aaea6cf2ebcfed4830b85d46e7dea37902c71fa94fc5d378114",
+      "bytes": 350367
+    },
+    {
+      "path": "meshes/efeu_fahrwerk2_collision.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk2_collision.dae",
+      "sha256": "342f449efe7c636f37dc09b162cb2450daf2897e56145178d9f4da378e411a97",
+      "bytes": 15796
+    },
+    {
+      "path": "meshes/efeu_fahrwerk2_visual.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_fahrwerk2_visual.dae",
+      "sha256": "61033498777cd96cc0286ae5d97a0c70bde359108caccb1c4e36cece148812ee",
+      "bytes": 151309
+    },
+    {
+      "path": "meshes/efeu_hubplatte.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_hubplatte.dae",
+      "sha256": "1562a4cab02dcd0b8a3eb27842a0f70f5f8519f1c52956a34bd79576116b9156",
+      "bytes": 51734
+    },
+    {
+      "path": "meshes/efeu_wanne_collision.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_wanne_collision.dae",
+      "sha256": "e55ab445c0f79cef5c5a098d0fb57ba8e547691ceb939741573f6250e31ab6a6",
+      "bytes": 21447
+    },
+    {
+      "path": "meshes/efeu_wanne_verkleidung.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/efeu_wanne_verkleidung.dae",
+      "sha256": "1c0bc64e7e370ded04d856919db1be0d05b3c80690048c791ec72245f2a23ba4",
+      "bytes": 11851331
+    },
+    {
+      "path": "meshes/sick/LMS1xx_collision.stl",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/sick/LMS1xx_collision.stl",
+      "sha256": "e01a997192dadc1ed0d124e53af7fec977b952c1bb919aed53b9607594ec8615",
+      "bytes": 9684
+    },
+    {
+      "path": "meshes/sick/LMS1xx_small.dae",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/meshes/sick/LMS1xx_small.dae",
+      "sha256": "c233e094e8a196dc81a0515add7e9130038706ea0e746f33cad6a2d6b4cd58c8",
+      "bytes": 714831
+    },
+    {
+      "path": "urdf/AMR/efeu.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu.xacro",
+      "sha256": "6f020cfb02af28aca6e35865bdaef714c50ad50e69d6ec2f54a9e673e8e0767d",
+      "bytes": 2690
+    },
+    {
+      "path": "urdf/AMR/efeu_fahrwerk.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_fahrwerk.xacro",
+      "sha256": "af66b23553d79f8815e953f03c5a69e70218452b81d162349da9488739034977",
+      "bytes": 4328
+    },
+    {
+      "path": "urdf/AMR/efeu_hubplatte.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_hubplatte.xacro",
+      "sha256": "e8af82654ba8911c61c0b0616a3afb644eb28d167f7efd076d209e26b9970067",
+      "bytes": 1673
+    },
+    {
+      "path": "urdf/AMR/efeu_karosserie.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_karosserie.xacro",
+      "sha256": "9fc517bd3fbdc9d12e4aaaec63b3f4ba71fb5dc37f6d288c329e7b0174812ef1",
+      "bytes": 1679
+    },
+    {
+      "path": "urdf/AMR/efeu_plugin.gazebo",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_plugin.gazebo",
+      "sha256": "0b3bfdf5fc94f4c72e9b4c2c3a249561847b3630525724867518e717fb62c0ed",
+      "bytes": 1806
+    },
+    {
+      "path": "urdf/AMR/efeu_properties.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_properties.xacro",
+      "sha256": "484e8d3a03d3553686a39176fae623a7c03278a20a108821290321608dbaf1d9",
+      "bytes": 8180
+    },
+    {
+      "path": "urdf/AMR/efeu_rad.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/efeu_rad.xacro",
+      "sha256": "f27cb1d07bf58065c85243fea8918897bb851534c9013605c6e2cb248ce5d34f",
+      "bytes": 4948
+    },
+    {
+      "path": "urdf/AMR/materials.urdf.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR/materials.urdf.xacro",
+      "sha256": "43244391b540f37443636b768aa4c5c39ba26b61fed9d0e13172a6d8ceb2f8cf",
+      "bytes": 818
+    },
+    {
+      "path": "urdf/AMR_sensors.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/AMR_sensors.xacro",
+      "sha256": "a578304ff57a3253fb1dc7bb13a9752ab6fa219334b2ff098c25c5cf07f1b370",
+      "bytes": 3946
+    },
+    {
+      "path": "urdf/sensors/sensor_bracket.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/sensors/sensor_bracket.xacro",
+      "sha256": "e8a30433b044bb938df9c550b938fef21bdbd370d9cec7dbee33c2431e5cee13",
+      "bytes": 2087
+    },
+    {
+      "path": "urdf/sensors/sick_safetyscanner.xacro",
+      "url": "https://raw.githubusercontent.com/SEW-Eurodrive-Open-Source/Multimodal_AMR_dataset/f9559a0a96bb64beffbf7501d29210c742aefc6e/dataset_rosbag_viewer/ros2/urdf_viewer/urdf/sensors/sick_safetyscanner.xacro",
+      "sha256": "016dc921f691d2a8a58f41f0bff87b17e73cb73c1179a9e6ee4b1e2385b66482",
+      "bytes": 3660
+    }
+  ],
+  "webModel": {
+    "path": "efeu-web.glb",
+    "sha256": "f4a0dbeaf0a186ce4872b33fa9cdd2d3974e294694b61c20d0ce0b2edffc1af8",
+    "bytes": 8072576,
+    "sourceUrdfSha256": "5c585447bc8f556cc1cb02a320ab4cbc61aca432cd83c2154df214f0a6ab5892",
+    "mapping": "Three.js URDFLoader/GLTFExporter; regenerate invalid normal counts; Z-up to Y-up; gltfpack -cc -noq -kn -km. No position quantization or mesh simplification.",
+    "gltfpackVersion": "1.2.0"
+  }
+}

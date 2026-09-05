@@ -16,7 +16,7 @@ const uuid=z.string().uuid();
 const scenario=z.object({name:z.string().trim().min(1).max(200),payload:z.record(z.string(),z.unknown())}).strict();
 const invitation=z.object({email:z.string().email().max(254),role:z.enum(['editor','viewer'])}).strict();
 const app=new Hono<{Bindings:Bindings;Variables:Variables}>();
-app.use('*',secureHeaders({referrerPolicy:'no-referrer',xFrameOptions:'DENY',contentSecurityPolicy:{defaultSrc:["'self'"],scriptSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:'],connectSrc:["'self'",'https://*.supabase.co'],objectSrc:["'none'"],baseUri:["'self'"],frameAncestors:["'none'"]}}));
+app.use('*',secureHeaders({referrerPolicy:'no-referrer',xFrameOptions:'DENY',contentSecurityPolicy:{defaultSrc:["'self'"],scriptSrc:["'self'","'wasm-unsafe-eval'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:'],connectSrc:["'self'",'https://*.supabase.co'],objectSrc:["'none'"],baseUri:["'self'"],frameAncestors:["'none'"]}}));
 app.use('/api/*',bodyLimit({maxSize:2*1024*1024,onError:c=>c.json({error:'Размер запроса превышает 2 МБ'},413)}));
 app.use('/api/*',async(c,next)=>{c.header('Cache-Control','no-store');const origin=c.req.header('Origin');const target=new URL(c.req.url);const local=['127.0.0.1','localhost'].includes(target.hostname)&&['http://127.0.0.1:5173','http://localhost:5173'].includes(origin??'');if(origin&&origin!==target.origin&&!local)return c.json({error:'Origin не разрешён'},403);await next();});
 app.onError((_error,c)=>c.json({error:'Не удалось выполнить запрос'},500));
