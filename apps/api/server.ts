@@ -1,0 +1,13 @@
+import { serve } from '@hono/node-server';
+import { serveStatic } from '@hono/node-server/serve-static';
+import { Hono } from 'hono';
+import { secureHeaders } from 'hono/secure-headers';
+import { existsSync } from 'node:fs';
+import app from './app';
+if(existsSync('.env'))process.loadEnvFile('.env');
+const server=new Hono();
+server.use('*',secureHeaders({xFrameOptions:'DENY',referrerPolicy:'no-referrer'}));
+server.use('/api/*',async c=>app.fetch(c.req.raw,{SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY,GOOGLE_OAUTH_ENABLED:process.env.GOOGLE_OAUTH_ENABLED}));
+server.use('*',serveStatic({root:'./dist'}));
+server.get('*',serveStatic({path:'./dist/index.html'}));
+serve({fetch:server.fetch,hostname:'127.0.0.1',port:Number(process.env.PORT??8787)});

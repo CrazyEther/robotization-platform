@@ -1,0 +1,39 @@
+[
+  {
+    "test": "real_catalog_integrity",
+    "passed": true,
+    "result": {
+      "products": 44,
+      "families": 16,
+      "cases": 8,
+      "sources": 40,
+      "rawChecksumsVerified": 35,
+      "retrieved": 35,
+      "unavailable": 5
+    }
+  },
+  {
+    "test": "reject_missing_candidate",
+    "passed": true
+  },
+  {
+    "test": "reject_dangling_source",
+    "passed": true
+  },
+  {
+    "test": "reject_unearned_economics",
+    "passed": true
+  },
+  {
+    "test": "reject_manifest_drift",
+    "passed": true
+  },
+  {
+    "test": "reject_unknown_family",
+    "passed": true
+  },
+  {
+    "test": "short_quote_limit_per_source",
+    "passed": true
+  }
+]

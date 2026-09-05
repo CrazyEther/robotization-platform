@@ -1,0 +1,460 @@
+{
+  "mappingVersion": "primary-reference-v1",
+  "extracts": [
+    {
+      "sourceId": "kira-spec",
+      "url": "https://www.karcher.com/ie/en/professional/products/kira-b-50-p15330020",
+      "snapshotSha256": "246bf2f1ae2012cdd875083f7b0e5d3c6ff3eb8757243a7112ab12670516c2be",
+      "locator": "Technical data: Working width, brushes; Fresh/dirty water tank",
+      "shortQuote": "Working width, brushes (mm) 550",
+      "factualNote": "Рабочая ширина щёток 550 мм; бак чистой воды 55 л.",
+      "numericMapping": [
+        {
+          "productId": "karcher-kira-b50",
+          "characteristicKey": "scrubbing_width",
+          "originalValue": 550,
+          "originalUnit": "mm",
+          "normalizedValue": 550,
+          "normalizedUnit": "mm",
+          "mappingRule": "identity",
+          "conditions": "Технические данные модели 1.533-002.0; без ширины всасывающей балки"
+        },
+        {
+          "productId": "karcher-kira-b50",
+          "characteristicKey": "clean_water_capacity",
+          "originalValue": 55,
+          "originalUnit": "L",
+          "normalizedValue": 55,
+          "normalizedUnit": "L",
+          "mappingRule": "identity",
+          "conditions": "Номинальная ёмкость; расход зависит от режима"
+        }
+      ]
+    },
+    {
+      "sourceId": "tennant-guide",
+      "url": "https://www.tennantco.com/content/dam/tennant/tennantco/products/machines/tennant-machine-group-photos/tennant-product-guide-en-noam.pdf",
+      "snapshotSha256": "be59ee3649fb18d515a0ebb6e2be4d577d92252be7e7de03816b6ad3363f11a8",
+      "locator": "PDF page 7 (zero-based 6), T7AMR",
+      "shortQuote": "Cleaning Path: Disk: 26 in / 650 mm",
+      "factualNote": "T7AMR: дисковая очистка 650 мм, бак раствора 110 л. Значение 650 взято из метрической колонки; это не пересчёт 26 дюймов.",
+      "numericMapping": [
+        {
+          "productId": "tennant-t7amr",
+          "characteristicKey": "scrubbing_width",
+          "originalValue": 650,
+          "originalUnit": "mm",
+          "normalizedValue": 650,
+          "normalizedUnit": "mm",
+          "mappingRule": "identity",
+          "conditions": "Product Guide, PDF страница 7, T7AMR Disk; не T7 с другими головками"
+        },
+        {
+          "productId": "tennant-t7amr",
+          "characteristicKey": "clean_water_capacity",
+          "originalValue": 110,
+          "originalUnit": "L",
+          "normalizedValue": 110,
+          "normalizedUnit": "L",
+          "mappingRule": "identity",
+          "conditions": "Product Guide, PDF страница 7, Solution tank"
+        }
+      ]
+    },
+    {
+      "sourceId": "gausium-s50",
+      "url": "https://gausium.com/products/scrubber50/",
+      "snapshotSha256": "6b43d2a0b399ed171f414d26f0dffbfcdd4ee0d109e657235359d47970386cde",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Роботизированная мойка пола с вариантами щёток и опциональной станцией.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "dexory-maersk",
+      "url": "https://www.dexory.com/en-us/real-time-warehouse-visibility-that-puts-maersk-ahead-of-the-curve",
+      "snapshotSha256": "8026a305ddbdea4ffd3f3e89bcd9368e75145570c5cd8bd33297f6bf3e5050e6",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автономное сканирование склада и сопоставление фактических запасов с учётом.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "ikea-verity",
+      "url": "https://www.ingka.com/newsroom/ikea-is-elevating-human-ai-powered-drone-collaboration/",
+      "snapshotSha256": "75c42f916672e381323c118850a39041ebc6ecf72b51f368fa992e55d5eacf2a",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автономные дроны для контроля запасов на складе.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "mir-robots",
+      "url": "https://mobile-industrial-robots.com/",
+      "snapshotSha256": "344471dee9c470699e34325598f8b87d4f9f9c66faa10ebad9425cab8bdef116",
+      "locator": "Robot portfolio: MiR250",
+      "shortQuote": "MiR250",
+      "factualNote": "На странице указан MiR250 с нагрузкой до 250 кг.",
+      "numericMapping": [
+        {
+          "productId": "mir250",
+          "characteristicKey": "payload",
+          "originalValue": 250,
+          "originalUnit": "kg",
+          "normalizedValue": 250,
+          "normalizedUnit": "kg",
+          "mappingRule": "identity",
+          "conditions": "MiR250; паспортное ограничение платформы, не производительность процесса"
+        }
+      ]
+    },
+    {
+      "sourceId": "omron-ld",
+      "url": "https://robotics.omron.com/products/mobile-robots/ld-series/",
+      "snapshotSha256": "534cfa77d940635faf8ff1b0c89f15aa948bcd8e9667102732adf28c1fbf5b26",
+      "locator": "LD-250 product and specifications table",
+      "shortQuote": "Maximum payload",
+      "factualNote": "LD-250: до 250 кг, максимальная скорость 1,2 м/с.",
+      "numericMapping": [
+        {
+          "productId": "omron-ld250",
+          "characteristicKey": "payload",
+          "originalValue": 250,
+          "originalUnit": "kg",
+          "normalizedValue": 250,
+          "normalizedUnit": "kg",
+          "mappingRule": "identity",
+          "conditions": "LD-250; заявленная производителем максимальная нагрузка"
+        },
+        {
+          "productId": "omron-ld250",
+          "characteristicKey": "max_speed",
+          "originalValue": 1.2,
+          "originalUnit": "m/s",
+          "normalizedValue": 1.2,
+          "normalizedUnit": "m/s",
+          "mappingRule": "identity",
+          "conditions": "Паспортная скорость; не средняя скорость задания"
+        }
+      ]
+    },
+    {
+      "sourceId": "ronavi-h1500",
+      "url": "https://ronavi-robotics.ru/catalogue/h1500",
+      "snapshotSha256": "de19d366fe8b39a8bd3d74bddc6c52739031d5a4d0a2e0b93350c2e9922d9675",
+      "locator": "Технические характеристики; цена при покупке от 100 шт.",
+      "shortQuote": "Грузоподъемность; до 1500 кг",
+      "factualNote": "До 1500 кг, до 1,5 м/с; публичная цена имеет ограничение объёма заказа и не перенесена в экономическую готовность.",
+      "numericMapping": [
+        {
+          "productId": "ronavi-h1500",
+          "characteristicKey": "payload",
+          "originalValue": 1500,
+          "originalUnit": "kg",
+          "normalizedValue": 1500,
+          "normalizedUnit": "kg",
+          "mappingRule": "identity",
+          "conditions": "До 1500 кг; допустимость конкретного носителя требует согласования"
+        },
+        {
+          "productId": "ronavi-h1500",
+          "characteristicKey": "max_speed",
+          "originalValue": 1.5,
+          "originalUnit": "m/s",
+          "normalizedValue": 1.5,
+          "normalizedUnit": "m/s",
+          "mappingRule": "identity",
+          "conditions": "Паспортная скорость; включает ограничения площадки"
+        }
+      ]
+    },
+    {
+      "sourceId": "knapp-evo",
+      "url": "https://www.knapp.com/en/newsroom/press/pick-it-easy-robot-and-osr-shuttle-evo/",
+      "snapshotSha256": "fc1e86da44083f58a52e3cc321b1ef0bcc7a870766c0ca3e2c1c76adfaa0d3f2",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Связь зон склада и производства мобильными роботами. Шаттловая система хранения и подачи товара к операциям склада.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "autostore-r5",
+      "url": "https://www.autostoresystem.com/system/robot-r5",
+      "snapshotSha256": "d51dad701224f26b2432e735febdec30150cc2613bdbd8e122fdc0f9952beccd",
+      "locator": "Red Line model sections; technical specification and FAQ",
+      "shortQuote": "",
+      "factualNote": "Подтверждены R5 и R5+ Pro как модели системы; противоречивый uptime исключён.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "dematic-gtp",
+      "url": "https://www.dematic.com/content/dam/dematic/downloads/brochures/NA_BR-1181-EN_GTP_Overview.pdf",
+      "snapshotSha256": "868c758d657d7f90b29fc672991fe202ee544d17f452fa78cb2458601b15c8f8",
+      "locator": "PDF page 4 (zero-based 3), Subsystem Types",
+      "shortQuote": "",
+      "factualNote": "Брошюра перечисляет Multishuttle и Mini-Load AS/RS как альтернативные подсистемы хранения.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "dhl-locus",
+      "url": "https://www.dhl.com/global-en/delivered/innovation/locus-robotics-robotic-picking.html",
+      "snapshotSha256": null,
+      "locator": "Meet our high performing robots; updated June 2023",
+      "shortQuote": "",
+      "factualNote": "В первичной публикации DHL названа модель Locus Origin; локальная загрузка не завершилась.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "dhl-stretch",
+      "url": "https://www.dhl.com/us-en/home/press/press-archive/2023/dhl-supply-chain-achieves-first-commercial-deployment-of-boston-dynamics-stretch-robot.html",
+      "snapshotSha256": null,
+      "locator": "Press release 2023-01-31, deployment paragraphs",
+      "shortQuote": "",
+      "factualNote": "В первичной публикации DHL описано перемещение коробов из трейлера на конвейер; локальная загрузка не завершилась.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "knapp-picking",
+      "url": "https://www.knapp.com/en/pick-it-easy-robot-3/",
+      "snapshotSha256": "0145dd8797288dbc2781692cbf5fbc42906655532512e1b3cf7825da9c07ce58",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Роботизированное извлечение и укладка товаров в связанной ячейке.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "vanderlande-sort",
+      "url": "https://www.vanderlande.com/warehousing-vanderlande/systems/sortation/",
+      "snapshotSha256": "ae54d8de7df51f612a6c7c608575f690e5edd9effc4a0b075ee9a588084eecc3",
+      "locator": "Our Sortation products",
+      "shortQuote": "",
+      "factualNote": "Страница перечисляет POSISORTER и CROSSORTER; типы sliding-shoe и cross-belt различаются.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "vanderlande-airpick",
+      "url": "https://www.vanderlande.com/wp-content/uploads/2020/12/Vanderlande-AIRPICK-leaflet.pdf",
+      "snapshotSha256": "60da9b8cfe097eea97fb3250d3c94ad9b7b2708bab765689de4bff085e3d3e2f",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Комплектование и обработка возвратов с карманной сортировкой.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "yandex-putwall",
+      "url": "https://robotics.yandex.ru/robotics-putwall",
+      "snapshotSha256": "96a4531a6d4b4021800b1433caabf5381e972834651e6f9229de22d3fbdcecc8",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Распределение малогабаритных товаров по заказам, возвратам или наборам.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "interroll-mcp",
+      "url": "https://www.interroll.com/products/mcp",
+      "snapshotSha256": "1a8e161fd35bf5debe6418fb3552383594db9d1d8fdba3708761d045dc4d1411",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Модульная конвейерная платформа для устойчивых потоков грузовых единиц.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "packsize-x5",
+      "url": "https://www.packsize.com/product/x5",
+      "snapshotSha256": "5201aeb6766b876f32eba0384930fb08ba10fc714f348cdfc84a7d9ffab05101",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автоматизированное формирование коробов под размер отправления.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "cmc-cartonwrap",
+      "url": "https://new.cmcsolutions.com/prodotto/cartonwrap-2/",
+      "snapshotSha256": "dae451db4629267095c42106b44689844a42c246b6c4419b364d3504a965b12b",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Упаковочная система для коробов, подбираемых под размер продукции.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "ur20",
+      "url": "https://www.universal-robots.com/products/ur20/",
+      "snapshotSha256": "efa608f1f6ef9097cf754b1c6ef15f071d03ecfb972cb161d30791e6f975e336",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Коллаборативный манипулятор для интеграции в технологическую ячейку.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "abb-gofa",
+      "url": "https://www.abb.com/global/en/areas/robotics/products/robots/collaborative-robots/gofa",
+      "snapshotSha256": null,
+      "locator": "GoFa product family and available variants",
+      "shortQuote": "",
+      "factualNote": "Первичная страница подтверждает семейство GoFa; прямое локальное сохранение завершилось таймаутом.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "fanuc-crx",
+      "url": "https://www.fanuc.eu/eu-en/crx-series",
+      "snapshotSha256": "cb383d69678fee2a1285ffd3695b5792eb24d9bb871afec3f4beab12f7197578",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Линейка коллаборативных промышленных манипуляторов.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "cognex-is2800",
+      "url": "https://docs.cognex.com/is-usp_2442/web/EN/is2800-manual/Content/Topics/getting-started/about-device.htm",
+      "snapshotSha256": "1ba4f49bbdf9211b51da6899822d1e186a5b00914660f9ab0ad0b96e73090d0e",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Система машинного зрения для контроля продукции на технологической линии.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "keyence-iv4",
+      "url": "https://www.keyence.com/products/vision/vision-sensor/iv4/",
+      "snapshotSha256": "a9cea8c045ef49d0772b3922263343823214a0bcd2bc44d98f70fc58952baea4",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Датчик машинного зрения для контроля наличия и характеристик объекта.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "aethon-robots",
+      "url": "https://aethon.com/our-robots/",
+      "snapshotSha256": "eb1f1d0c067d75d2490e16f88a2a13170c0c207e287f8052d54fa656fbf39271",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автономное перемещение тележек в медицинских и сервисных зданиях. Защищённая доставка аптечных, лабораторных и клинических материалов.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "diligent-moxi",
+      "url": "https://www.diligentrobots.com/moxi/",
+      "snapshotSha256": "e84691b69aefbc31e95f0e99b1895a3fef08e982e293a48a15d2e91ef2b41238",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Внутрибольничная доставка и вспомогательные неклинические задачи.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "alstef-agv",
+      "url": "https://alstefgroup.com/baggage-handling/baggage-handling-products/agv-solutions-for-airports/",
+      "snapshotSha256": null,
+      "locator": "BAGXONE, AVILOAD and AVIBATCH product sections; browser-readable primary page",
+      "shortQuote": "",
+      "factualNote": "Страница просмотрена через веб-поиск; прямая локальная загрузка получила 403. Поштучный багаж, партии и ULD являются разными единицами груза.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "sita-swift",
+      "url": "https://www.sita.aero/globalassets/docs/brochures/sita-swift-drop-brochure.pdf",
+      "snapshotSha256": "c16561da506fcab1f9e391e72151c5b53dce7720b6ace688f784870cde8af3b3",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Стойка самостоятельной сдачи багажа, разработанная совместно с Alstef.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "sita-bagmessage",
+      "url": "https://www.sita.aero/solutions/sita-at-airports/sita-baggage-management/sita-bag-message/",
+      "snapshotSha256": "427778612be0d93b971ae6055a91689edd6fe7b6fdd354ea5d76d86c0c6fe5ff",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Обмен багажными сообщениями между аэропортами и авиакомпаниями.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "1c-wms",
+      "url": "https://solutions.1c.ru/catalog/wms4/features",
+      "snapshotSha256": "d8a2f152bd79a761e1e05f6e3792c371982374bc087fd6444ef2181ab4a3a29c",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Адресный учёт и управление складскими операциями.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "sap-ewm",
+      "url": "https://www.sap.com/products/scm/extended-warehouse-management.html",
+      "snapshotSha256": "483d47675b82c47c06a69dc24c44df9461bff69d75424c5c0ca0351a39767bd5",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Управление запасами, складскими заданиями и взаимодействием с автоматизацией.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "odoo-barcode",
+      "url": "https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/barcode.html",
+      "snapshotSha256": "f25ccdef61eceb5d88c8ec53f7b1ea933bc761821c261163abd6fef606f769c6",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Выполнение складских операций со сканированием штрихкодов.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "uipath-du",
+      "url": "https://marketplace.uipath.com/products/document-understanding",
+      "snapshotSha256": "9eaf119c7132f0c48442aaf4d9bfd1524cb7642d58de2bba2a29c1941231f58c",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Извлечение и интерпретация данных документов в автоматизированном процессе.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "abbyy-vantage",
+      "url": "https://www.abbyy.com/vantage/",
+      "snapshotSha256": "8f9434ca33e999a117ad067260cd28ecc15fdcafbb3f3899929c7b0f74311bc5",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Интеллектуальная обработка документов и извлечение структурированных полей.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "power-automate",
+      "url": "https://learn.microsoft.com/en-us/power-automate/getting-started",
+      "snapshotSha256": "97e95caa17aeaf460a6c85ce621412e1328d5b492ae46ab39154ef73cd836ccc",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автоматизация цифровых рабочих процессов и повторяющихся действий.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "primo-mmk",
+      "url": "https://primo-rpa.ru/cases/industry/mmk-metiz",
+      "snapshotSha256": "7bedf15dcba38c633087f968078ddd1c9237a6c9fdaa5700d8579f77d32159b7",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Программная роботизация отчётности и повторяющихся офисных операций.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "kira-hcl",
+      "url": "https://www.kaercher.com/nz/target-groups-transport-logistics/healthcare-logistics.html",
+      "snapshotSha256": "748c1beffe41e452aad18cecd287c0bfcb15f24c169cb772bbe6b40bf9cf046b",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "Автономная поломоечная машина для регулярной уборки.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "autostore-puma",
+      "url": "https://www.autostoresystem.com/news/puma-autostore-bastian-solutions-expand-partnership?hs_amp=true",
+      "snapshotSha256": "dee1133a1131fae300145001908efef700b533c7d37e5dfe55c06da3c5be6eba",
+      "locator": "Основной заголовок, описание продукта или кейса",
+      "shortQuote": "",
+      "factualNote": "AutoStore описывает внедрение системы хранения и расширение сети PUMA. Целевой рост новой площадки не записан как достигнутый KPI.",
+      "numericMapping": []
+    },
+    {
+      "sourceId": "asda-warrington",
+      "url": "https://corporate.asda.com/newsroom/2017/06/12/royal-seal-of-approval-for-100-million-retail-distribution-warehouse-of-the-future",
+      "snapshotSha256": null,
+      "locator": "Published 2017-06-12, distribution-centre description",
+      "shortQuote": "",
+      "factualNote": "Историческое сообщение Asda описывает автоматизированный центр; локальная загрузка получила 403.",
+      "numericMapping": []
+    }
+  ]
+}

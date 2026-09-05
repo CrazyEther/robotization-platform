@@ -1,0 +1,4 @@
+import {describe,it,expect} from 'vitest';
+import raw from '../data/observations/uci-incidents.json';
+import {prepareObservedLog,localClockSeconds} from '../packages/domain/event-log';
+describe('licensed UCI log projection',()=>{it('retains every real row and exact relative timestamps',()=>{const result=prepareObservedLog(raw);expect(result.events).toHaveLength(raw.rows.length);expect(result.cases).toHaveLength(8);for(const e of result.events){const source=raw.rows.find(r=>r.rawRow===e.rawRow)!;expect(e.incident_state).toBe(source.incident_state);expect(e.at).toBe(localClockSeconds(source.sys_updated_at)-result.events[0].clock);}});it('is reproducible and rejects missing observations',()=>{expect(prepareObservedLog(raw)).toEqual(prepareObservedLog(raw));expect(()=>prepareObservedLog({})).toThrow();});});

@@ -1,0 +1,523 @@
+{
+  "schemaVersion": "observed-digital-log/1",
+  "source": {
+    "id": "uci-incidents-498",
+    "title": "Incident management process enriched event log",
+    "url": "https://archive.ics.uci.edu/dataset/498/incident+management+process+enriched+event+log",
+    "doi": "10.24432/C57S4H",
+    "attribution": "Amaral, C., Fantinato, M., & Peres, S. (2018). UCI Machine Learning Repository.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "observedAt": "2026-09-05T14:23:53.441274+00:00",
+    "sha256": "6294e29a311647306bfdfc85783f7df66517c197b9cd49aa5ee36ba9c525d1d6",
+    "rawLocator": "data/raw/uci-incidents/6294e29a311647306bfdfc85783f7df66517c197b9cd49aa5ee36ba9c525d1d6.zip",
+    "rawMember": "incident_event_log.csv",
+    "mappingVersion": "uci-digital-excerpt/1",
+    "selection": "First eight lexicographically ordered case identifiers containing Closed and parseable update timestamps; all rows retained, only five source columns projected plus original CSV row locator.",
+    "limitations": [
+      "Historical anonymized incident handling, not document OCR/RPA performance.",
+      "Local clock timestamps; source timezone unspecified. No conversion to UTC.",
+      "State elapsed time is not active employee work time.",
+      "No prices, staffing costs or automation outcome are present.",
+      "Equal timestamps and repeated states are retained; no intermediate events are generated."
+    ]
+  },
+  "rows": [
+    {
+      "number": "INC0000045",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 01:23",
+      "opened_at": "29/2/2016 01:16",
+      "closed_at": "5/3/2016 12:00",
+      "rawRow": 2
+    },
+    {
+      "number": "INC0000045",
+      "incident_state": "Resolved",
+      "sys_updated_at": "29/2/2016 08:53",
+      "opened_at": "29/2/2016 01:16",
+      "closed_at": "5/3/2016 12:00",
+      "rawRow": 3
+    },
+    {
+      "number": "INC0000045",
+      "incident_state": "Resolved",
+      "sys_updated_at": "29/2/2016 11:29",
+      "opened_at": "29/2/2016 01:16",
+      "closed_at": "5/3/2016 12:00",
+      "rawRow": 4
+    },
+    {
+      "number": "INC0000045",
+      "incident_state": "Closed",
+      "sys_updated_at": "5/3/2016 12:00",
+      "opened_at": "29/2/2016 01:16",
+      "closed_at": "5/3/2016 12:00",
+      "rawRow": 5
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 04:57",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 6
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 05:30",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 7
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 05:33",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 8
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 11:31",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 9
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 11:32",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 10
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Active",
+      "sys_updated_at": "1/3/2016 09:14",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 11
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Awaiting User Info",
+      "sys_updated_at": "1/3/2016 09:14",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 12
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Resolved",
+      "sys_updated_at": "1/3/2016 09:52",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 13
+    },
+    {
+      "number": "INC0000047",
+      "incident_state": "Closed",
+      "sys_updated_at": "6/3/2016 10:00",
+      "opened_at": "29/2/2016 04:40",
+      "closed_at": "6/3/2016 10:00",
+      "rawRow": 14
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 06:26",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 15
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 06:38",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 16
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 10:06",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 17
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "New",
+      "sys_updated_at": "1/3/2016 02:53",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 18
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "New",
+      "sys_updated_at": "1/3/2016 02:54",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 19
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "Resolved",
+      "sys_updated_at": "1/3/2016 02:55",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 20
+    },
+    {
+      "number": "INC0000057",
+      "incident_state": "Closed",
+      "sys_updated_at": "6/3/2016 03:00",
+      "opened_at": "29/2/2016 06:10",
+      "closed_at": "6/3/2016 03:00",
+      "rawRow": 21
+    },
+    {
+      "number": "INC0000060",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 06:42",
+      "opened_at": "29/2/2016 06:38",
+      "closed_at": "7/3/2016 13:00",
+      "rawRow": 22
+    },
+    {
+      "number": "INC0000060",
+      "incident_state": "Active",
+      "sys_updated_at": "2/3/2016 08:52",
+      "opened_at": "29/2/2016 06:38",
+      "closed_at": "7/3/2016 13:00",
+      "rawRow": 23
+    },
+    {
+      "number": "INC0000060",
+      "incident_state": "Resolved",
+      "sys_updated_at": "2/3/2016 12:06",
+      "opened_at": "29/2/2016 06:38",
+      "closed_at": "7/3/2016 13:00",
+      "rawRow": 24
+    },
+    {
+      "number": "INC0000060",
+      "incident_state": "Closed",
+      "sys_updated_at": "7/3/2016 13:00",
+      "opened_at": "29/2/2016 06:38",
+      "closed_at": "7/3/2016 13:00",
+      "rawRow": 25
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:26",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 26
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:29",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 27
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:34",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 28
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 11:23",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 29
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 11:28",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 30
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 15:51",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 31
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "Resolved",
+      "sys_updated_at": "29/2/2016 15:51",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 32
+    },
+    {
+      "number": "INC0000062",
+      "incident_state": "Closed",
+      "sys_updated_at": "5/3/2016 16:00",
+      "opened_at": "29/2/2016 06:58",
+      "closed_at": "5/3/2016 16:00",
+      "rawRow": 33
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:17",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 34
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:23",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 35
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:27",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 36
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:46",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 37
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:46",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 38
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 16:01",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 39
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "Resolved",
+      "sys_updated_at": "29/2/2016 16:01",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 40
+    },
+    {
+      "number": "INC0000063",
+      "incident_state": "Closed",
+      "sys_updated_at": "5/3/2016 17:00",
+      "opened_at": "29/2/2016 07:08",
+      "closed_at": "5/3/2016 17:00",
+      "rawRow": 41
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:14",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 42
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:16",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 43
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 13:12",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 44
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Active",
+      "sys_updated_at": "29/2/2016 13:13",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 45
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Active",
+      "sys_updated_at": "2/3/2016 09:17",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 46
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Active",
+      "sys_updated_at": "2/3/2016 12:00",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 47
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Active",
+      "sys_updated_at": "3/3/2016 16:00",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 48
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Resolved",
+      "sys_updated_at": "3/3/2016 16:00",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 49
+    },
+    {
+      "number": "INC0000064",
+      "incident_state": "Closed",
+      "sys_updated_at": "8/3/2016 17:00",
+      "opened_at": "29/2/2016 07:10",
+      "closed_at": "8/3/2016 17:00",
+      "rawRow": 50
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:46",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 51
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 07:55",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 52
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 08:26",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 53
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 08:26",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 54
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 09:19",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 55
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 09:26",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 56
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 09:27",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 57
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 11:17",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 58
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "29/2/2016 14:51",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 59
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "New",
+      "sys_updated_at": "1/3/2016 16:52",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 60
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "Awaiting User Info",
+      "sys_updated_at": "2/3/2016 15:17",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 61
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "Resolved",
+      "sys_updated_at": "2/3/2016 15:21",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 62
+    },
+    {
+      "number": "INC0000065",
+      "incident_state": "Closed",
+      "sys_updated_at": "7/3/2016 16:00",
+      "opened_at": "29/2/2016 07:38",
+      "closed_at": "7/3/2016 16:00",
+      "rawRow": 63
+    }
+  ]
+}

@@ -1,0 +1,1900 @@
+{
+  "sources": [
+    {
+      "id": "kira-spec",
+      "title": "KIRA B 50: technical data",
+      "url": "https://www.karcher.com/ie/en/professional/products/kira-b-50-p15330020",
+      "publisher": "Kärcher",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Technical data: Working width, brushes; Fresh/dirty water tank",
+        "verbatim": "Working width, brushes (mm) 550",
+        "note": "Рабочая ширина щёток 550 мм; бак чистой воды 55 л."
+      }
+    },
+    {
+      "id": "tennant-guide",
+      "title": "Tennant Product Guide: T7AMR",
+      "url": "https://www.tennantco.com/content/dam/tennant/tennantco/products/machines/tennant-machine-group-photos/tennant-product-guide-en-noam.pdf",
+      "publisher": "Tennant",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "PDF page 7 (zero-based 6), T7AMR",
+        "verbatim": "Cleaning Path: Disk: 26 in / 650 mm",
+        "note": "T7AMR: дисковая очистка 650 мм, бак раствора 110 л. Значение 650 взято из метрической колонки; это не пересчёт 26 дюймов."
+      }
+    },
+    {
+      "id": "gausium-s50",
+      "title": "Scrubber 50",
+      "url": "https://gausium.com/products/scrubber50/",
+      "publisher": "Gausium",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Роботизированная мойка пола с вариантами щёток и опциональной станцией."
+      }
+    },
+    {
+      "id": "dexory-maersk",
+      "title": "Dexory and Maersk warehouse visibility",
+      "url": "https://www.dexory.com/en-us/real-time-warehouse-visibility-that-puts-maersk-ahead-of-the-curve",
+      "publisher": "Dexory",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автономное сканирование склада и сопоставление фактических запасов с учётом."
+      }
+    },
+    {
+      "id": "ikea-verity",
+      "title": "IKEA is elevating human AI-powered drone collaboration",
+      "url": "https://www.ingka.com/newsroom/ikea-is-elevating-human-ai-powered-drone-collaboration/",
+      "publisher": "Ingka Group",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автономные дроны для контроля запасов на складе."
+      }
+    },
+    {
+      "id": "mir-robots",
+      "title": "Mobile Industrial Robots: MiR250",
+      "url": "https://mobile-industrial-robots.com/",
+      "publisher": "Mobile Industrial Robots",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Robot portfolio: MiR250",
+        "verbatim": "MiR250",
+        "note": "На странице указан MiR250 с нагрузкой до 250 кг."
+      }
+    },
+    {
+      "id": "omron-ld",
+      "title": "LD Series autonomous mobile robots",
+      "url": "https://robotics.omron.com/products/mobile-robots/ld-series/",
+      "publisher": "OMRON Robotics",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "LD-250 product and specifications table",
+        "verbatim": "Maximum payload",
+        "note": "LD-250: до 250 кг, максимальная скорость 1,2 м/с."
+      }
+    },
+    {
+      "id": "ronavi-h1500",
+      "title": "Ronavi H1500: характеристики и условия цены",
+      "url": "https://ronavi-robotics.ru/catalogue/h1500",
+      "publisher": "Ronavi Robotics",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Технические характеристики; цена при покупке от 100 шт.",
+        "verbatim": "Грузоподъемность; до 1500 кг",
+        "note": "До 1500 кг, до 1,5 м/с; публичная цена имеет ограничение объёма заказа и не перенесена в экономическую готовность."
+      }
+    },
+    {
+      "id": "knapp-evo",
+      "title": "Robots: New Intelligence for Logistics",
+      "url": "https://www.knapp.com/en/newsroom/press/pick-it-easy-robot-and-osr-shuttle-evo/",
+      "publisher": "KNAPP",
+      "publishedAt": "2021-05-25",
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Связь зон склада и производства мобильными роботами. Шаттловая система хранения и подачи товара к операциям склада."
+      }
+    },
+    {
+      "id": "autostore-r5",
+      "title": "AutoStore Red Line robots",
+      "url": "https://www.autostoresystem.com/system/robot-r5",
+      "publisher": "AutoStore",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Red Line model sections; technical specification and FAQ",
+        "verbatim": "",
+        "note": "Подтверждены R5 и R5+ Pro как модели системы; противоречивый uptime исключён."
+      }
+    },
+    {
+      "id": "dematic-gtp",
+      "title": "Dematic Goods-to-Person overview",
+      "url": "https://www.dematic.com/content/dam/dematic/downloads/brochures/NA_BR-1181-EN_GTP_Overview.pdf",
+      "publisher": "Dematic",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "PDF page 4 (zero-based 3), Subsystem Types",
+        "verbatim": "",
+        "note": "Брошюра перечисляет Multishuttle и Mini-Load AS/RS как альтернативные подсистемы хранения."
+      }
+    },
+    {
+      "id": "dhl-locus",
+      "title": "DHL robotic assisted picking",
+      "url": "https://www.dhl.com/global-en/delivered/innovation/locus-robotics-robotic-picking.html",
+      "publisher": "DHL",
+      "publishedAt": "2023-06",
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Meet our high performing robots; updated June 2023",
+        "verbatim": "",
+        "note": "В первичной публикации DHL названа модель Locus Origin; локальная загрузка не завершилась."
+      }
+    },
+    {
+      "id": "dhl-stretch",
+      "title": "DHL commercial deployment of Stretch",
+      "url": "https://www.dhl.com/us-en/home/press/press-archive/2023/dhl-supply-chain-achieves-first-commercial-deployment-of-boston-dynamics-stretch-robot.html",
+      "publisher": "DHL",
+      "publishedAt": "2023-01-31",
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Press release 2023-01-31, deployment paragraphs",
+        "verbatim": "",
+        "note": "В первичной публикации DHL описано перемещение коробов из трейлера на конвейер; локальная загрузка не завершилась."
+      }
+    },
+    {
+      "id": "knapp-picking",
+      "title": "Pick-it-Easy Robot",
+      "url": "https://www.knapp.com/en/pick-it-easy-robot-3/",
+      "publisher": "KNAPP",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Роботизированное извлечение и укладка товаров в связанной ячейке."
+      }
+    },
+    {
+      "id": "vanderlande-sort",
+      "title": "Vanderlande Sortation",
+      "url": "https://www.vanderlande.com/warehousing-vanderlande/systems/sortation/",
+      "publisher": "Vanderlande",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Our Sortation products",
+        "verbatim": "",
+        "note": "Страница перечисляет POSISORTER и CROSSORTER; типы sliding-shoe и cross-belt различаются."
+      }
+    },
+    {
+      "id": "vanderlande-airpick",
+      "title": "AIRPICK: picking and returns handling",
+      "url": "https://www.vanderlande.com/wp-content/uploads/2020/12/Vanderlande-AIRPICK-leaflet.pdf",
+      "publisher": "Vanderlande",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Комплектование и обработка возвратов с карманной сортировкой."
+      }
+    },
+    {
+      "id": "yandex-putwall",
+      "title": "Роботизированный путволл",
+      "url": "https://robotics.yandex.ru/robotics-putwall",
+      "publisher": "Яндекс Роботикс",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Распределение малогабаритных товаров по заказам, возвратам или наборам."
+      }
+    },
+    {
+      "id": "interroll-mcp",
+      "title": "Modular Conveyor Platform MCP",
+      "url": "https://www.interroll.com/products/mcp",
+      "publisher": "Interroll",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Модульная конвейерная платформа для устойчивых потоков грузовых единиц."
+      }
+    },
+    {
+      "id": "packsize-x5",
+      "title": "X5 automated erected box system",
+      "url": "https://www.packsize.com/product/x5",
+      "publisher": "Packsize",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автоматизированное формирование коробов под размер отправления."
+      }
+    },
+    {
+      "id": "cmc-cartonwrap",
+      "title": "CartonWrap",
+      "url": "https://new.cmcsolutions.com/prodotto/cartonwrap-2/",
+      "publisher": "CMC Packaging Automation",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Упаковочная система для коробов, подбираемых под размер продукции."
+      }
+    },
+    {
+      "id": "ur20",
+      "title": "UR20 collaborative robot",
+      "url": "https://www.universal-robots.com/products/ur20/",
+      "publisher": "Universal Robots",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Коллаборативный манипулятор для интеграции в технологическую ячейку."
+      }
+    },
+    {
+      "id": "abb-gofa",
+      "title": "GoFa collaborative robot family",
+      "url": "https://www.abb.com/global/en/areas/robotics/products/robots/collaborative-robots/gofa",
+      "publisher": "ABB",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "GoFa product family and available variants",
+        "verbatim": "",
+        "note": "Первичная страница подтверждает семейство GoFa; прямое локальное сохранение завершилось таймаутом."
+      }
+    },
+    {
+      "id": "fanuc-crx",
+      "title": "CRX collaborative robot series",
+      "url": "https://www.fanuc.eu/eu-en/crx-series",
+      "publisher": "FANUC",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Линейка коллаборативных промышленных манипуляторов."
+      }
+    },
+    {
+      "id": "cognex-is2800",
+      "title": "About the In-Sight 2800 Series",
+      "url": "https://docs.cognex.com/is-usp_2442/web/EN/is2800-manual/Content/Topics/getting-started/about-device.htm",
+      "publisher": "Cognex",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Система машинного зрения для контроля продукции на технологической линии."
+      }
+    },
+    {
+      "id": "keyence-iv4",
+      "title": "IV4 series vision sensor",
+      "url": "https://www.keyence.com/products/vision/vision-sensor/iv4/",
+      "publisher": "KEYENCE",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Датчик машинного зрения для контроля наличия и характеристик объекта."
+      }
+    },
+    {
+      "id": "aethon-robots",
+      "title": "Aethon robot portfolio",
+      "url": "https://aethon.com/our-robots/",
+      "publisher": "Aethon",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автономное перемещение тележек в медицинских и сервисных зданиях. Защищённая доставка аптечных, лабораторных и клинических материалов."
+      }
+    },
+    {
+      "id": "diligent-moxi",
+      "title": "Moxi hospital robot",
+      "url": "https://www.diligentrobots.com/moxi/",
+      "publisher": "Diligent Robotics",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Внутрибольничная доставка и вспомогательные неклинические задачи."
+      }
+    },
+    {
+      "id": "alstef-agv",
+      "title": "AGV solutions for airports",
+      "url": "https://alstefgroup.com/baggage-handling/baggage-handling-products/agv-solutions-for-airports/",
+      "publisher": "Alstef Group",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "BAGXONE, AVILOAD and AVIBATCH product sections; browser-readable primary page",
+        "verbatim": "",
+        "note": "Страница просмотрена через веб-поиск; прямая локальная загрузка получила 403. Поштучный багаж, партии и ULD являются разными единицами груза."
+      }
+    },
+    {
+      "id": "sita-swift",
+      "title": "SITA Swift Drop brochure",
+      "url": "https://www.sita.aero/globalassets/docs/brochures/sita-swift-drop-brochure.pdf",
+      "publisher": "SITA",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Стойка самостоятельной сдачи багажа, разработанная совместно с Alstef."
+      }
+    },
+    {
+      "id": "sita-bagmessage",
+      "title": "SITA Bag Message",
+      "url": "https://www.sita.aero/solutions/sita-at-airports/sita-baggage-management/sita-bag-message/",
+      "publisher": "SITA",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Обмен багажными сообщениями между аэропортами и авиакомпаниями."
+      }
+    },
+    {
+      "id": "1c-wms",
+      "title": "1С:WMS Логистика. Управление складом",
+      "url": "https://solutions.1c.ru/catalog/wms4/features",
+      "publisher": "1С",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Адресный учёт и управление складскими операциями."
+      }
+    },
+    {
+      "id": "sap-ewm",
+      "title": "SAP Extended Warehouse Management",
+      "url": "https://www.sap.com/products/scm/extended-warehouse-management.html",
+      "publisher": "SAP",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Управление запасами, складскими заданиями и взаимодействием с автоматизацией."
+      }
+    },
+    {
+      "id": "odoo-barcode",
+      "title": "Odoo Barcode documentation",
+      "url": "https://www.odoo.com/documentation/19.0/applications/inventory_and_mrp/barcode.html",
+      "publisher": "Odoo",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Выполнение складских операций со сканированием штрихкодов."
+      }
+    },
+    {
+      "id": "uipath-du",
+      "title": "UiPath Document Understanding",
+      "url": "https://marketplace.uipath.com/products/document-understanding",
+      "publisher": "UiPath",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Извлечение и интерпретация данных документов в автоматизированном процессе."
+      }
+    },
+    {
+      "id": "abbyy-vantage",
+      "title": "ABBYY Vantage",
+      "url": "https://www.abbyy.com/vantage/",
+      "publisher": "ABBYY",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Интеллектуальная обработка документов и извлечение структурированных полей."
+      }
+    },
+    {
+      "id": "power-automate",
+      "title": "Power Automate: getting started",
+      "url": "https://learn.microsoft.com/en-us/power-automate/getting-started",
+      "publisher": "Microsoft",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автоматизация цифровых рабочих процессов и повторяющихся действий."
+      }
+    },
+    {
+      "id": "primo-mmk",
+      "title": "Primo RPA: ММК-МЕТИЗ",
+      "url": "https://primo-rpa.ru/cases/industry/mmk-metiz",
+      "publisher": "Primo RPA",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Программная роботизация отчётности и повторяющихся офисных операций."
+      }
+    },
+    {
+      "id": "kira-hcl",
+      "title": "Healthcare Logistics cleaning case",
+      "url": "https://www.kaercher.com/nz/target-groups-transport-logistics/healthcare-logistics.html",
+      "publisher": "Kärcher",
+      "publishedAt": null,
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "Автономная поломоечная машина для регулярной уборки."
+      }
+    },
+    {
+      "id": "autostore-puma",
+      "title": "AutoStore and Bastian expand fulfillment with PUMA",
+      "url": "https://www.autostoresystem.com/news/puma-autostore-bastian-solutions-expand-partnership?hs_amp=true",
+      "publisher": "AutoStore",
+      "publishedAt": "2024-11-20",
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Основной заголовок, описание продукта или кейса",
+        "verbatim": "",
+        "note": "AutoStore описывает внедрение системы хранения и расширение сети PUMA. Целевой рост новой площадки не записан как достигнутый KPI."
+      }
+    },
+    {
+      "id": "asda-warrington",
+      "title": "Asda automated distribution centre",
+      "url": "https://corporate.asda.com/newsroom/2017/06/12/royal-seal-of-approval-for-100-million-retail-distribution-warehouse-of-the-future",
+      "publisher": "Asda",
+      "publishedAt": "2017-06-12",
+      "terms": {
+        "status": "reference_only",
+        "note": "Только ссылка и краткие фактические записи; разрешение на перепубликацию страницы не установлено. Полное локальное сохранение исключено из публичного репозитория."
+      },
+      "evidence": {
+        "locator": "Published 2017-06-12, distribution-centre description",
+        "verbatim": "",
+        "note": "Историческое сообщение Asda описывает автоматизированный центр; локальная загрузка получила 403."
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "karcher-kira-b50",
+      "name": "Kärcher KIRA B 50",
+      "vendor": "Kärcher",
+      "familyId": "cleaning",
+      "kind": "machine",
+      "summary": "Автономная поломоечная машина для регулярной уборки.",
+      "sourceIds": [
+        "kira-spec",
+        "kira-hcl"
+      ],
+      "characteristics": [
+        {
+          "key": "scrubbing_width",
+          "label": "Рабочая ширина щёток",
+          "value": 550,
+          "unit": "mm",
+          "sourceId": "kira-spec",
+          "status": "vendor_claim",
+          "conditions": "Технические данные модели 1.533-002.0; без ширины всасывающей балки"
+        },
+        {
+          "key": "clean_water_capacity",
+          "label": "Бак чистой воды",
+          "value": 55,
+          "unit": "L",
+          "sourceId": "kira-spec",
+          "status": "vendor_claim",
+          "conditions": "Номинальная ёмкость; расход зависит от режима"
+        }
+      ],
+      "readiness": {
+        "catalog": true,
+        "comparison": true,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Ширина щётки не определяет фактическую скорость уборки объекта"
+      ]
+    },
+    {
+      "id": "tennant-t7amr",
+      "name": "Tennant T7AMR",
+      "vendor": "Tennant",
+      "familyId": "cleaning",
+      "kind": "machine",
+      "summary": "Автономная поломоечная машина с обучением маршрута.",
+      "sourceIds": [
+        "tennant-guide"
+      ],
+      "characteristics": [
+        {
+          "key": "scrubbing_width",
+          "label": "Рабочая ширина щёток",
+          "value": 650,
+          "unit": "mm",
+          "sourceId": "tennant-guide",
+          "status": "vendor_claim",
+          "conditions": "Product Guide, PDF страница 7, T7AMR Disk; не T7 с другими головками"
+        },
+        {
+          "key": "clean_water_capacity",
+          "label": "Бак чистой воды",
+          "value": 110,
+          "unit": "L",
+          "sourceId": "tennant-guide",
+          "status": "vendor_claim",
+          "conditions": "Product Guide, PDF страница 7, Solution tank"
+        }
+      ],
+      "readiness": {
+        "catalog": true,
+        "comparison": true,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Исполнение и режим эксплуатации нужно подтвердить для конкретного рынка"
+      ]
+    },
+    {
+      "id": "gausium-scrubber50",
+      "name": "Gausium Scrubber 50",
+      "vendor": "Gausium",
+      "familyId": "cleaning",
+      "kind": "machine",
+      "summary": "Роботизированная мойка пола с вариантами щёток и опциональной станцией.",
+      "sourceIds": [
+        "gausium-s50"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Режим точечной очистки нельзя сравнивать с полной уборкой одной цифрой производительности"
+      ]
+    },
+    {
+      "id": "dexoryview",
+      "name": "DexoryView и робот Dexory",
+      "vendor": "Dexory",
+      "familyId": "inventory",
+      "kind": "system",
+      "summary": "Автономное сканирование склада и сопоставление фактических запасов с учётом.",
+      "sourceIds": [
+        "dexory-maersk"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Заявленные показатели кейса Maersk не являются входами другого склада"
+      ]
+    },
+    {
+      "id": "verity-drones",
+      "name": "Verity inventory drones",
+      "vendor": "Verity",
+      "familyId": "inventory",
+      "kind": "system",
+      "summary": "Автономные дроны для контроля запасов на складе.",
+      "sourceIds": [
+        "ikea-verity"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Требуются проверка видимости маркировки и допуска полётов внутри объекта"
+      ]
+    },
+    {
+      "id": "mir250",
+      "name": "MiR250",
+      "vendor": "Mobile Industrial Robots",
+      "familyId": "transport",
+      "kind": "machine",
+      "summary": "Мобильная платформа для внутреннего перемещения грузов.",
+      "sourceIds": [
+        "mir-robots"
+      ],
+      "characteristics": [
+        {
+          "key": "payload",
+          "label": "Максимальная полезная нагрузка",
+          "value": 250,
+          "unit": "kg",
+          "sourceId": "mir-robots",
+          "status": "vendor_claim",
+          "conditions": "MiR250; паспортное ограничение платформы, не производительность процесса"
+        }
+      ],
+      "readiness": {
+        "catalog": true,
+        "comparison": true,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Полезную нагрузку верхнего модуля и такт передачи груза проверяют отдельно"
+      ]
+    },
+    {
+      "id": "omron-ld250",
+      "name": "OMRON LD-250",
+      "vendor": "OMRON",
+      "familyId": "transport",
+      "kind": "machine",
+      "summary": "Автономная транспортная платформа серии LD.",
+      "sourceIds": [
+        "omron-ld"
+      ],
+      "characteristics": [
+        {
+          "key": "payload",
+          "label": "Максимальная полезная нагрузка",
+          "value": 250,
+          "unit": "kg",
+          "sourceId": "omron-ld",
+          "status": "vendor_claim",
+          "conditions": "LD-250; заявленная производителем максимальная нагрузка"
+        },
+        {
+          "key": "max_speed",
+          "label": "Максимальная скорость",
+          "value": 1.2,
+          "unit": "m/s",
+          "sourceId": "omron-ld",
+          "status": "vendor_claim",
+          "conditions": "Паспортная скорость; не средняя скорость задания"
+        }
+      ],
+      "readiness": {
+        "catalog": true,
+        "comparison": true,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Не смешивать LD-250 с LD-60/90 и модификациями интеграторов"
+      ]
+    },
+    {
+      "id": "ronavi-h1500",
+      "name": "Ronavi H1500",
+      "vendor": "Ronavi Robotics",
+      "familyId": "transport",
+      "kind": "machine",
+      "summary": "Мобильный робот для перевозки паллет, стеллажей и транспортных модулей.",
+      "sourceIds": [
+        "ronavi-h1500"
+      ],
+      "characteristics": [
+        {
+          "key": "payload",
+          "label": "Максимальная полезная нагрузка",
+          "value": 1500,
+          "unit": "kg",
+          "sourceId": "ronavi-h1500",
+          "status": "vendor_claim",
+          "conditions": "До 1500 кг; допустимость конкретного носителя требует согласования"
+        },
+        {
+          "key": "max_speed",
+          "label": "Максимальная скорость",
+          "value": 1.5,
+          "unit": "m/s",
+          "sourceId": "ronavi-h1500",
+          "status": "vendor_claim",
+          "conditions": "Паспортная скорость; включает ограничения площадки"
+        }
+      ],
+      "readiness": {
+        "catalog": true,
+        "comparison": true,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Публичная цена от 2 160 000 RUB относится только к покупке от 100 штук; НДС и итоговая комплектация не установлены"
+      ]
+    },
+    {
+      "id": "knapp-open-shuttle",
+      "name": "KNAPP Open Shuttle",
+      "vendor": "KNAPP",
+      "familyId": "transport",
+      "kind": "system",
+      "summary": "Связь зон склада и производства мобильными роботами.",
+      "sourceIds": [
+        "knapp-evo"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Историческое название из публикации 2021 года; текущую поставляемую конфигурацию нужно уточнить"
+      ]
+    },
+    {
+      "id": "autostore-r5",
+      "name": "AutoStore R5",
+      "vendor": "AutoStore",
+      "familyId": "storage",
+      "kind": "component",
+      "summary": "Робот кубической системы хранения, доставляющий контейнеры к портам.",
+      "sourceIds": [
+        "autostore-r5"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Компонент системы: grid, контейнеры, порты и ПО необходимо считать отдельно",
+        "Показатели uptime внутри страницы расходятся; в каталог не перенесены"
+      ]
+    },
+    {
+      "id": "autostore-r5plus-pro",
+      "name": "AutoStore R5+ Pro",
+      "vendor": "AutoStore",
+      "familyId": "storage",
+      "kind": "component",
+      "summary": "Модель Red Line для кубического хранения и многосменной эксплуатации.",
+      "sourceIds": [
+        "autostore-r5"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Сам робот не составляет готовую систему хранения"
+      ]
+    },
+    {
+      "id": "dematic-multishuttle",
+      "name": "Dematic Multishuttle",
+      "vendor": "Dematic",
+      "familyId": "storage",
+      "kind": "system",
+      "summary": "Шаттловое хранение и выдача контейнеров, коробов и лотков.",
+      "sourceIds": [
+        "dematic-gtp"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Нужно учитывать подъёмники, буферы, станции и профиль обращений SKU"
+      ]
+    },
+    {
+      "id": "dematic-miniload",
+      "name": "Dematic Mini-Load AS/RS",
+      "vendor": "Dematic",
+      "familyId": "storage",
+      "kind": "system",
+      "summary": "Автоматизированное хранение с выдачей грузовых единиц к рабочим местам.",
+      "sourceIds": [
+        "dematic-gtp"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Подбор зависит от ёмкости, нагрузки и требуемого входного/выходного потока"
+      ]
+    },
+    {
+      "id": "knapp-osr-evo",
+      "name": "KNAPP OSR Shuttle Evo",
+      "vendor": "KNAPP",
+      "familyId": "storage",
+      "kind": "system",
+      "summary": "Шаттловая система хранения и подачи товара к операциям склада.",
+      "sourceIds": [
+        "knapp-evo"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Историческая публикация не подтверждает актуальную спецификацию"
+      ]
+    },
+    {
+      "id": "locus-origin",
+      "name": "Locus Origin",
+      "vendor": "Locus Robotics",
+      "familyId": "assisted-picking",
+      "kind": "machine",
+      "summary": "AMR сопровождает комплектование; товар извлекает сотрудник.",
+      "sourceIds": [
+        "dhl-locus"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Не является манипулятором автоматического захвата товаров"
+      ]
+    },
+    {
+      "id": "boston-stretch",
+      "name": "Boston Dynamics Stretch",
+      "vendor": "Boston Dynamics",
+      "familyId": "unloading",
+      "kind": "machine",
+      "summary": "Разгрузка коробов из трейлеров на принимающий конвейер.",
+      "sourceIds": [
+        "dhl-stretch"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Нельзя переносить применимость на любой груз, паллеты или повреждённую упаковку"
+      ]
+    },
+    {
+      "id": "knapp-pick-it-easy",
+      "name": "KNAPP Pick-it-Easy Robot",
+      "vendor": "KNAPP",
+      "familyId": "picking",
+      "kind": "system",
+      "summary": "Роботизированное извлечение и укладка товаров в связанной ячейке.",
+      "sourceIds": [
+        "knapp-picking"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Ассортимент и исключения требуют испытаний; верхняя граница массы не доказывает захватываемость"
+      ]
+    },
+    {
+      "id": "vanderlande-posisorter",
+      "name": "Vanderlande POSISORTER",
+      "vendor": "Vanderlande",
+      "familyId": "sortation",
+      "kind": "system",
+      "summary": "Сортировка коробов по направлениям с использованием sliding-shoe механизма.",
+      "sourceIds": [
+        "vanderlande-sort"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Паспортный поток не равен завершённым заказам в час"
+      ]
+    },
+    {
+      "id": "vanderlande-crossorter",
+      "name": "Vanderlande CROSSORTER",
+      "vendor": "Vanderlande",
+      "familyId": "sortation",
+      "kind": "system",
+      "summary": "Cross-belt сортировка товаров и отправлений.",
+      "sourceIds": [
+        "vanderlande-sort"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Подача и освобождение выходов могут ограничивать пропускную способность"
+      ]
+    },
+    {
+      "id": "vanderlande-airpick",
+      "name": "Vanderlande AIRPICK / AIRTRAX Pocket",
+      "vendor": "Vanderlande",
+      "familyId": "sortation",
+      "kind": "system",
+      "summary": "Комплектование и обработка возвратов с карманной сортировкой.",
+      "sourceIds": [
+        "vanderlande-airpick"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Возврат требует отдельного решения о качестве и повторном вводе в продажу"
+      ]
+    },
+    {
+      "id": "yandex-putwall",
+      "name": "Яндекс Роботикс: роботизированный путволл",
+      "vendor": "Яндекс Роботикс",
+      "familyId": "sortation",
+      "kind": "system",
+      "summary": "Распределение малогабаритных товаров по заказам, возвратам или наборам.",
+      "sourceIds": [
+        "yandex-putwall"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Заявленные 97% ассортимента не имеют опубликованного знаменателя",
+        "До 3 кг; для двухпальцевого захвата одна сторона товара должна быть не меньше 15 см"
+      ]
+    },
+    {
+      "id": "interroll-mcp",
+      "name": "Interroll MCP",
+      "vendor": "Interroll",
+      "familyId": "conveyor",
+      "kind": "system",
+      "summary": "Модульная конвейерная платформа для устойчивых потоков грузовых единиц.",
+      "sourceIds": [
+        "interroll-mcp"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Компоновка, приводы и управление определяются проектом линии"
+      ]
+    },
+    {
+      "id": "packsize-x5",
+      "name": "Packsize X5",
+      "vendor": "Packsize",
+      "familyId": "packaging",
+      "kind": "machine",
+      "summary": "Автоматизированное формирование коробов под размер отправления.",
+      "sourceIds": [
+        "packsize-x5"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Формирование короба не означает автоматический отбор всех товаров заказа"
+      ]
+    },
+    {
+      "id": "cmc-cartonwrap",
+      "name": "CMC CartonWrap",
+      "vendor": "CMC Packaging Automation",
+      "familyId": "packaging",
+      "kind": "machine",
+      "summary": "Упаковочная система для коробов, подбираемых под размер продукции.",
+      "sourceIds": [
+        "cmc-cartonwrap"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Требуется выбрать конкретное исполнение CartonWrap и допустимые размеры"
+      ]
+    },
+    {
+      "id": "ur20",
+      "name": "Universal Robots UR20",
+      "vendor": "Universal Robots",
+      "familyId": "workcell",
+      "kind": "component",
+      "summary": "Коллаборативный манипулятор для интеграции в технологическую ячейку.",
+      "sourceIds": [
+        "ur20"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Грузоподъёмность 25 кг имеет граничные условия руководства; ячейка требует захвата и проверки процесса"
+      ]
+    },
+    {
+      "id": "abb-gofa",
+      "name": "ABB GoFa",
+      "vendor": "ABB",
+      "familyId": "workcell",
+      "kind": "component",
+      "summary": "Семейство коллаборативных манипуляторов для производственных операций.",
+      "sourceIds": [
+        "abb-gofa"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Семейство содержит разные модели; нельзя назначать одну грузоподъёмность всей линейке"
+      ]
+    },
+    {
+      "id": "fanuc-crx",
+      "name": "FANUC CRX",
+      "vendor": "FANUC",
+      "familyId": "workcell",
+      "kind": "component",
+      "summary": "Линейка коллаборативных промышленных манипуляторов.",
+      "sourceIds": [
+        "fanuc-crx"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Нужно выбрать модель и оснастку; название серии не задаёт точный такт"
+      ]
+    },
+    {
+      "id": "cognex-insight2800",
+      "name": "Cognex In-Sight 2800",
+      "vendor": "Cognex",
+      "familyId": "inspection",
+      "kind": "component",
+      "summary": "Система машинного зрения для контроля продукции на технологической линии.",
+      "sourceIds": [
+        "cognex-is2800"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Доля дефектов и качество распознавания неизвестны без размеченных образцов клиента"
+      ]
+    },
+    {
+      "id": "keyence-iv4",
+      "name": "KEYENCE IV4",
+      "vendor": "KEYENCE",
+      "familyId": "inspection",
+      "kind": "component",
+      "summary": "Датчик машинного зрения для контроля наличия и характеристик объекта.",
+      "sourceIds": [
+        "keyence-iv4"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Нужны освещение, изображения годных/дефектных изделий и критерии приёмки"
+      ]
+    },
+    {
+      "id": "aethon-t3",
+      "name": "Aethon T3",
+      "vendor": "Aethon",
+      "familyId": "hospital",
+      "kind": "machine",
+      "summary": "Автономное перемещение тележек в медицинских и сервисных зданиях.",
+      "sourceIds": [
+        "aethon-robots"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Не переносить характеристики T3 XL на T3; требуется интеграция дверей и лифтов"
+      ]
+    },
+    {
+      "id": "aethon-zenarx",
+      "name": "Aethon ZenaRx",
+      "vendor": "Aethon",
+      "familyId": "hospital",
+      "kind": "machine",
+      "summary": "Защищённая доставка аптечных, лабораторных и клинических материалов.",
+      "sourceIds": [
+        "aethon-robots"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Не выполняет медицинское решение; условия хранения и цепочка передачи задаются объектом"
+      ]
+    },
+    {
+      "id": "diligent-moxi",
+      "name": "Diligent Moxi",
+      "vendor": "Diligent Robotics",
+      "familyId": "hospital",
+      "kind": "machine",
+      "summary": "Внутрибольничная доставка и вспомогательные неклинические задачи.",
+      "sourceIds": [
+        "diligent-moxi"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Применимость конкретного материала и маршрута требует клинического операционного согласования"
+      ]
+    },
+    {
+      "id": "alstef-bagxone",
+      "name": "Alstef BAGXONE",
+      "vendor": "Alstef Group",
+      "familyId": "baggage",
+      "kind": "system",
+      "summary": "Автономное перемещение отдельных единиц багажа между зонами аэропорта.",
+      "sourceIds": [
+        "alstef-agv"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Не заменяет досмотр и проверку допуска багажа к рейсу"
+      ]
+    },
+    {
+      "id": "alstef-avibatch",
+      "name": "Alstef AVIBATCH",
+      "vendor": "Alstef Group",
+      "familyId": "baggage",
+      "kind": "system",
+      "summary": "Автономная транспортировка багажа партиями.",
+      "sourceIds": [
+        "alstef-agv"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Багаж поштучно и партиями требует разных знаменателей производительности"
+      ]
+    },
+    {
+      "id": "alstef-aviload",
+      "name": "Alstef AVILOAD",
+      "vendor": "Alstef Group",
+      "familyId": "baggage",
+      "kind": "system",
+      "summary": "Транспортировка контейнеров и ULD в аэропортовой логистике.",
+      "sourceIds": [
+        "alstef-agv"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Нужны типы ULD, загрузка и инфраструктура маршрута"
+      ]
+    },
+    {
+      "id": "sita-swift-drop",
+      "name": "SITA Swift Drop",
+      "vendor": "SITA",
+      "familyId": "baggage",
+      "kind": "system",
+      "summary": "Стойка самостоятельной сдачи багажа, разработанная совместно с Alstef.",
+      "sourceIds": [
+        "sita-swift"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Это интерфейс пассажирского процесса, не транспортный робот"
+      ]
+    },
+    {
+      "id": "sita-bag-message",
+      "name": "SITA Bag Message",
+      "vendor": "SITA",
+      "familyId": "baggage",
+      "kind": "software",
+      "summary": "Обмен багажными сообщениями между аэропортами и авиакомпаниями.",
+      "sourceIds": [
+        "sita-bagmessage"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Сообщения в секунду нельзя сравнивать с чемоданами в час"
+      ]
+    },
+    {
+      "id": "1c-wms",
+      "name": "1С:WMS Логистика. Управление складом",
+      "vendor": "1С",
+      "familyId": "wms",
+      "kind": "software",
+      "summary": "Адресный учёт и управление складскими операциями.",
+      "sourceIds": [
+        "1c-wms"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Стоимость внедрения зависит от интеграций и лицензирования"
+      ]
+    },
+    {
+      "id": "sap-ewm",
+      "name": "SAP Extended Warehouse Management",
+      "vendor": "SAP",
+      "familyId": "wms",
+      "kind": "software",
+      "summary": "Управление запасами, складскими заданиями и взаимодействием с автоматизацией.",
+      "sourceIds": [
+        "sap-ewm"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Версия, инфраструктура и доступность поставки требуют отдельной проверки"
+      ]
+    },
+    {
+      "id": "odoo-barcode",
+      "name": "Odoo Barcode",
+      "vendor": "Odoo",
+      "familyId": "wms",
+      "kind": "software",
+      "summary": "Выполнение складских операций со сканированием штрихкодов.",
+      "sourceIds": [
+        "odoo-barcode"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Модуль сканирования не эквивалентен всей функциональности отдельной WMS"
+      ]
+    },
+    {
+      "id": "uipath-du",
+      "name": "UiPath Document Understanding",
+      "vendor": "UiPath",
+      "familyId": "digital",
+      "kind": "software",
+      "summary": "Извлечение и интерпретация данных документов в автоматизированном процессе.",
+      "sourceIds": [
+        "uipath-du"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Точность проверяется на документах клиента; исключения направляются на проверку"
+      ]
+    },
+    {
+      "id": "abbyy-vantage",
+      "name": "ABBYY Vantage",
+      "vendor": "ABBYY",
+      "familyId": "digital",
+      "kind": "software",
+      "summary": "Интеллектуальная обработка документов и извлечение структурированных полей.",
+      "sourceIds": [
+        "abbyy-vantage"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Поставляемую версию и условия лицензии нужно установить отдельно"
+      ]
+    },
+    {
+      "id": "microsoft-power-automate",
+      "name": "Microsoft Power Automate",
+      "vendor": "Microsoft",
+      "familyId": "digital",
+      "kind": "software",
+      "summary": "Автоматизация цифровых рабочих процессов и повторяющихся действий.",
+      "sourceIds": [
+        "power-automate"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Наличие API и готового коннектора следует проверять для каждой системы"
+      ]
+    },
+    {
+      "id": "primo-rpa",
+      "name": "Primo RPA",
+      "vendor": "Primo RPA",
+      "familyId": "digital",
+      "kind": "software",
+      "summary": "Программная роботизация отчётности и повторяющихся офисных операций.",
+      "sourceIds": [
+        "primo-mmk"
+      ],
+      "characteristics": [],
+      "readiness": {
+        "catalog": true,
+        "comparison": false,
+        "economics": false,
+        "simulation": false,
+        "procurement": false
+      },
+      "limitations": [
+        "Исследовательский кандидат; закупочная пригодность не подтверждена",
+        "Стоимость полного внедрения, условия поставки и реальные входы объекта не установлены",
+        "Экономические эффекты ММК-МЕТИЗ не являются прогнозом для другого предприятия"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "id": "dhl-operations",
+      "company": "DHL",
+      "title": "Разгрузка и совместное комплектование",
+      "summary": "Оператор описывает применение Stretch для разгрузки коробов и Locus для поддержки комплектовщиков. Это разные операции с разными ограничениями.",
+      "sourceIds": [
+        "dhl-stretch",
+        "dhl-locus"
+      ],
+      "status": "operator_reported",
+      "familyIds": [
+        "unloading",
+        "assisted-picking"
+      ]
+    },
+    {
+      "id": "puma-autostore",
+      "company": "PUMA",
+      "title": "Расширение автоматизированного fulfillment",
+      "summary": "AutoStore описывает внедрение системы хранения и расширение сети PUMA. Целевой рост новой площадки не записан как достигнутый KPI.",
+      "sourceIds": [
+        "autostore-puma"
+      ],
+      "status": "vendor_claim",
+      "familyIds": [
+        "storage"
+      ]
+    },
+    {
+      "id": "wurth-picking",
+      "company": "Würth Industrie Service",
+      "title": "Роботизированное комплектование",
+      "summary": "KNAPP указывает применение Pick-it-Easy Robot для обработки большого объёма заказов. Исходные данные окупаемости не опубликованы на рассмотренной странице.",
+      "sourceIds": [
+        "knapp-picking"
+      ],
+      "status": "vendor_claim",
+      "familyIds": [
+        "picking"
+      ]
+    },
+    {
+      "id": "asda-warrington",
+      "company": "Asda",
+      "title": "Комплексный распределительный центр Warrington",
+      "summary": "Историческая публикация оператора описывает совместную работу персонала, крановых систем и конвейеров. Это пример интегрированного потока снабжения магазинов.",
+      "sourceIds": [
+        "asda-warrington"
+      ],
+      "status": "operator_reported",
+      "familyIds": [
+        "storage",
+        "conveyor"
+      ]
+    },
+    {
+      "id": "hcl-cleaning",
+      "company": "Healthcare Logistics New Zealand",
+      "title": "Регулярная уборка медицинского склада",
+      "summary": "Kärcher описывает применение KIRA B 50 для регулярной уборки и цифровой фиксации операций в логистике медицинских товаров. Указана модель операционной аренды без опубликованного размера платежа.",
+      "sourceIds": [
+        "kira-hcl"
+      ],
+      "status": "vendor_claim",
+      "familyIds": [
+        "cleaning"
+      ]
+    },
+    {
+      "id": "ikea-ventory",
+      "company": "IKEA / Ingka Group",
+      "title": "Инвентаризация с помощью Verity",
+      "summary": "Оператор описывает совместную разработку и применение автономных дронов Verity для контроля запасов. Публикация подтверждает внедрение, но не даёт полного набора экономических входов.",
+      "sourceIds": [
+        "ikea-verity"
+      ],
+      "status": "operator_reported",
+      "familyIds": [
+        "inventory"
+      ]
+    },
+    {
+      "id": "maersk-inventory",
+      "company": "Maersk",
+      "title": "Автономное сканирование и видимость запасов",
+      "summary": "Dexory описывает работу роботов и DexoryView в складской сети Maersk, включая площадки Kettering и Tamworth. Заявления поставщика об эффективности не превращены в независимые измерения.",
+      "sourceIds": [
+        "dexory-maersk"
+      ],
+      "status": "vendor_claim",
+      "familyIds": [
+        "inventory"
+      ]
+    },
+    {
+      "id": "mmk-digital",
+      "company": "ММК-МЕТИЗ",
+      "title": "Роботизация отчётности и документооборота",
+      "summary": "Primo RPA описывает автоматизацию сбора и сверки информации, подготовки отчётов и документов. Вендорские денежные эффекты не используются как входы расчёта другого предприятия.",
+      "sourceIds": [
+        "primo-mmk"
+      ],
+      "status": "vendor_claim",
+      "familyIds": [
+        "digital"
+      ]
+    }
+  ]
+}
