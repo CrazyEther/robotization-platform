@@ -1,0 +1,4 @@
+simpy==4.1.1
+fastapi>=0.110,<1
+uvicorn>=0.30,<1
+pydantic>=2,<3

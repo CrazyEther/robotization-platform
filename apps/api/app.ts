@@ -9,8 +9,9 @@ import { validateImport } from '../../packages/importer/index';
 import * as domain from '../../packages/domain/index';
 import {assessCandidates} from '../../packages/catalog/matching';
 import {buildKnowledgeGraph} from '../../packages/catalog/knowledge';
+import {simulationSchema} from '../../packages/ris/contracts';
 
-export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
+export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; SIMULATION_ENGINE_URL?:string; SIMULATION_SERVICE_KEY?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
 type Variables = { db:SupabaseClient; userId:string };
 const uuid=z.string().uuid();
 const scenario=z.object({name:z.string().trim().min(1).max(200),payload:z.record(z.string(),z.unknown())}).strict();
@@ -32,6 +33,20 @@ app.post('/api/v1/diagnose',async c=>{const result=diagnose(await json(c.req.raw
 app.post('/api/v1/compare',async c=>{const parsed=z.object({productIds:z.array(z.string()).min(2).max(4).refine(x=>new Set(x).size===x.length)}).strict().safeParse(await json(c.req.raw));if(!parsed.success)return c.json({error:'Укажите от 2 до 4 разных продуктов'},422);const products=catalogSchema.parse(registry).products.filter(p=>parsed.data.productIds.includes(p.id));if(products.length!==parsed.data.productIds.length)return c.json({error:'Неизвестный продукт'},422);return c.json({products,rows:compareProducts(products)});});
 app.post('/api/v1/economics',async c=>c.json(domain.evaluateEconomics(await json(c.req.raw))));
 app.post('/api/v1/models',async c=>c.json(domain.evaluateModel(await json(c.req.raw))));
+app.post('/api/v1/ris/simulate',async c=>{
+ const parsed=simulationSchema.safeParse(await json(c.req.raw));
+ if(!parsed.success)return c.json({error:'Некорректные параметры транспортного сценария',details:parsed.error.issues.map(i=>({path:i.path.join('.'),message:i.message}))},422);
+ if(parsed.data.workload.demandPerHour*parsed.data.workload.shiftHours>15000)return c.json({error:'Слишком много заданий для одного эксперимента'},422);
+ const base=c.env?.SIMULATION_ENGINE_URL,key=c.env?.SIMULATION_SERVICE_KEY;
+ if(!base||!key)return c.json({error:'Вычислительный сервис SimPy не подключён. Инженерные результаты и ROI недоступны.',code:'SIM_ENGINE_UNAVAILABLE'},503);
+ try{
+  const url=new URL('/simulations',base);
+  const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-simulation-key':key},body:JSON.stringify(parsed.data),signal:AbortSignal.timeout(25000)});
+  const result=await response.json();
+  if(!response.ok)return c.json({error:response.status===422?'Модель не может быть выполнена при заданных условиях':'Ошибка вычислительного сервиса',details:response.status===422?result:null},response.status===422?422:502);
+  return c.json(result);
+ }catch{return c.json({error:'Вычислительный сервис недоступен или превысил время выполнения.',code:'SIM_ENGINE_TIMEOUT'},503);}
+});
 app.post('/api/v1/simulation/replay',async c=>c.json(domain.replaySimulation(await json(c.req.raw))));
 app.post('/api/v1/simulation/flow',async c=>c.json(domain.simulateFlow(await json(c.req.raw))));
 app.post('/api/v1/imports/validate',async c=>{const result=validateImport(await json(c.req.raw));return c.json(result,result.valid?200:422);});

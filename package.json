@@ -15,6 +15,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "start": "tsx apps/api/server.ts",
+    "start:full": "npm run build && node scripts/start-ris.mjs",
+    "sim:test": "python -m unittest discover -s services/simulation -p test_engine.py -v",
     "data:verify": "tsx scripts/verify-data.ts",
     "deploy": "wrangler deploy",
     "db:start": "supabase start",
