@@ -7,7 +7,7 @@ import random
 import time
 import simpy
 
-ENGINE_VERSION = "simpy-transport/0.2"
+ENGINE_VERSION = "simpy-transport/0.3"
 
 def route_length(layout):
     width, height = layout["width"], layout["height"]
@@ -40,14 +40,32 @@ def run_model(request):
     consumption=round_trip*robot["whPerMeter"]
     if consumption>=robot["batteryWh"]:raise ValueError("Одного заряда недостаточно для полного транспортного задания.")
     env=simpy.Environment(); tasks=simpy.Store(env); chargers=simpy.Resource(env,capacity=robot["chargerCount"])
-    rng=random.Random(request["seed"]); result={"created":0,"completed":0,"distanceMeters":0.0,"energyKwh":0.0,"chargingHours":0.0}
-    queue_times=[]; busy_seconds=[0.0]*robot["count"]; battery=[robot["batteryWh"]]*robot["count"]; active=[None]*robot["count"]
+    rng=random.Random(request["seed"]); result={"created":0,"completed":0,"distanceMeters":0.0,"loadedMeters":0.0,"emptyMeters":0.0,"energyKwh":0.0,"chargingHours":0.0}
+    queue_times=[]; lead_times=[]; busy_seconds=[0.0]*robot["count"]; battery=[robot["batteryWh"]]*robot["count"]
+    active=[None]*robot["count"]; active_charge=[None]*robot["count"]; traveling=[None]*robot["count"]
     interval=3600/workload["demandPerHour"]
     def generate():
-        while env.now<horizon:
-            yield tasks.put(env.now); result["created"]+=1
-            delay=rng.expovariate(1/interval) if request["mode"]=="poisson" else interval
-            yield env.timeout(delay)
+        if request["mode"]=="fixed":
+            for index in range(math.ceil(workload["demandPerHour"]*hours)):
+                arrival=index*interval
+                if arrival>=horizon:break
+                if index:yield env.timeout(max(0,arrival-env.now))
+                yield tasks.put(env.now);result["created"]+=1
+        else:
+            while env.now<horizon:
+                yield tasks.put(env.now);result["created"]+=1
+                yield env.timeout(rng.expovariate(1/interval))
+    def drive(number,kind):
+        start=env.now
+        traveling[number]=(kind,start)
+        yield env.timeout(distance/robot["speedMps"])
+        traveling[number]=None
+        result["distanceMeters"]+=distance
+        result[kind+"Meters"]+=distance
+        energy_wh=distance*robot["whPerMeter"]
+        result["energyKwh"]+=energy_wh/1000
+        battery[number]-=energy_wh
+
     def worker(number):
         while True:
             created=yield tasks.get()
@@ -57,27 +75,43 @@ def run_model(request):
                     yield ticket
                     delta=robot["batteryWh"]-battery[number]
                     charge_sec=delta/robot["chargeW"]*3600
+                    active_charge[number]=env.now
                     yield env.timeout(charge_sec)
                     result["chargingHours"]+=charge_sec/3600
+                    active_charge[number]=None
                     battery[number]=robot["batteryWh"]
-            duration=round_trip/robot["speedMps"]+robot["loadSeconds"]+robot["unloadSeconds"]
             busy_begin=env.now;active[number]=busy_begin
-            yield env.timeout(duration)
-            busy_seconds[number]+=min(horizon,busy_begin+duration)-busy_begin if busy_begin<horizon else 0
+            yield env.timeout(robot["loadSeconds"])
+            yield from drive(number,"loaded")
+            yield env.timeout(robot["unloadSeconds"])
+            result["completed"]+=1
+            lead_times.append(env.now-created)
+            yield from drive(number,"empty")
+            busy_seconds[number]+=env.now-busy_begin
             active[number]=None
-            if env.now<=horizon:
-                result["completed"]+=1;result["distanceMeters"]+=round_trip
-                result["energyKwh"]+=consumption/1000
-            battery[number]-=consumption
     env.process(generate())
     for number in range(robot["count"]):env.process(worker(number))
     env.run(until=horizon)
     for number,start in enumerate(active):
         if start is not None:busy_seconds[number]+=max(0,horizon-start)
+    for number,motion in enumerate(traveling):
+        if motion is not None:
+            kind,start=motion
+            traversed=min(distance,max(0,horizon-start)*robot["speedMps"])
+            result["distanceMeters"]+=traversed
+            result[kind+"Meters"]+=traversed
+            result["energyKwh"]+=traversed*robot["whPerMeter"]/1000
+    for start in active_charge:
+        if start is not None:result["chargingHours"]+=max(0,horizon-start)/3600
     completed=result["completed"]
+    ordered=sorted(lead_times)
+    mean_job=sum(ordered)/len(ordered) if ordered else None
+    p95_job=ordered[math.ceil(.95*len(ordered))-1] if ordered else None
     return {"status":"complete","engine":"SimPy","engineVersion":ENGINE_VERSION,"routeMeters":distance,
        **result,"backlog":result["created"]-completed,"throughputPerHour":completed/hours,
        "meanQueueMinutes":sum(queue_times)/len(queue_times)/60 if queue_times else 0,
+       "meanJobSeconds":mean_job,"p95JobSeconds":p95_job,
+       "chargerUtilization":result["chargingHours"]/(hours*robot["chargerCount"]),
        "robotUtilization":sum(busy_seconds)/(horizon*robot["count"]),
        "warnings":["Дискретно-событийная транспортная модель: динамические столкновения, лифты, двери, безопасность и кинематика не моделируются."],
        "inputHash":hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest(),

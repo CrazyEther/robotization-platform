@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
-from engine import run_model
+from engine import ENGINE_VERSION, run_model
 
 app=FastAPI(title="RIS simulation service",docs_url=None,redoc_url=None)
 class Point(BaseModel):
@@ -42,7 +42,7 @@ class SimulationInput(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status":"ok","engine":"SimPy","version":"simpy-transport/0.2"}
+    return {"status":"ok","engine":"SimPy","version":ENGINE_VERSION}
 
 @app.post("/simulations")
 async def simulate(body:SimulationInput,x_simulation_key:str|None=Header(default=None)):

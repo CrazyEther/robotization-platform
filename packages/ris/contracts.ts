@@ -10,7 +10,7 @@ export const simulationSchema=z.object({
 export type SimulationInput=z.infer<typeof simulationSchema>;
 export type Layout=z.infer<typeof layoutSchema>;
 export type Sector=SimulationInput['sector'];
-export type SimulationResult={engine:string;engineVersion:string;status:'complete';routeMeters:number;created:number;completed:number;backlog:number;throughputPerHour:number;meanQueueMinutes:number;robotUtilization:number;distanceMeters:number;energyKwh:number;chargingHours:number;warnings:string[];inputHash:string;wallTimeMs:number};
+export type SimulationResult={engine:string;engineVersion:string;status:'complete';routeMeters:number;created:number;completed:number;backlog:number;throughputPerHour:number;meanQueueMinutes:number;meanJobSeconds:number|null;p95JobSeconds:number|null;robotUtilization:number;chargerUtilization:number;distanceMeters:number;loadedMeters:number;emptyMeters:number;energyKwh:number;chargingHours:number;warnings:string[];inputHash:string;wallTimeMs:number};
 export const sectorTemplates:Record<Sector,{title:string;subtitle:string;operation:string;layout:Layout;demandPerHour:number;loadKg:number}>={
  warehouse:{title:'Склад и логистика',subtitle:'Приёмка → хранение → отгрузка',operation:'Перемещение грузовых единиц',layout:{width:55,height:34,pickup:{x:5,y:8},dropoff:{x:49,y:27},obstacles:[{x:17,y:3,w:5,h:20},{x:29,y:11,w:5,h:20},{x:39,y:3,w:4,h:17}]},demandPerHour:18,loadKg:160},
  factory:{title:'Производство',subtitle:'Зона заготовок → обрабатывающий участок',operation:'Межоперационная транспортировка',layout:{width:45,height:32,pickup:{x:5,y:6},dropoff:{x:39,y:25},obstacles:[{x:14,y:4,w:7,h:13},{x:25,y:14,w:9,h:13}]},demandPerHour:12,loadKg:90},

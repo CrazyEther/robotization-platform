@@ -27,4 +27,32 @@ class TransportTests(unittest.TestCase):
   bad=copy.deepcopy(BASE);bad["robot"]["batteryWh"]=10
   with self.assertRaisesRegex(ValueError,"заряда"):run_model(bad)
 
+ def test_delivered_before_empty_return_and_partial_energy(self):
+  case=copy.deepcopy(BASE)
+  case["layout"]={"width":40,"height":10,"pickup":{"x":1,"y":1},"dropoff":{"x":31,"y":1},"obstacles":[]}
+  case["workload"]={"demandPerHour":1,"loadKg":20,"shiftHours":.25}
+  case["robot"].update(count=1,speedMps=.05,loadSeconds=0,unloadSeconds=0,batteryWh=1000,whPerMeter=1)
+  result=run_model(case)
+  self.assertEqual(result["created"],1)
+  self.assertEqual(result["completed"],1)
+  self.assertAlmostEqual(result["distanceMeters"],45)
+  self.assertAlmostEqual(result["loadedMeters"],30)
+  self.assertAlmostEqual(result["emptyMeters"],15)
+  self.assertAlmostEqual(result["energyKwh"],.045)
+  self.assertAlmostEqual(result["meanJobSeconds"],600)
+  self.assertAlmostEqual(result["p95JobSeconds"],600)
+
+ def test_fixed_arrivals_match_requested_shift_volume(self):
+  case=copy.deepcopy(BASE)
+  case["workload"]["demandPerHour"]=500
+  case["workload"]["shiftHours"]=24
+  self.assertEqual(run_model(case)["created"],12000)
+
+ def test_engine_revision_and_health_consistency(self):
+  import asyncio
+  from app import health
+  from engine import ENGINE_VERSION
+  self.assertEqual(asyncio.run(health())["version"],ENGINE_VERSION)
+  self.assertEqual(ENGINE_VERSION,"simpy-transport/0.3")
+
 if __name__=="__main__":unittest.main()

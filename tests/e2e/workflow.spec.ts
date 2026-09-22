@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
 
 async function prepareTransport(page:import('@playwright/test').Page){
  await page.goto('/');
@@ -17,6 +18,9 @@ test('one coherent experience: object → marketplace → layout → SimPy → i
  await prepareTransport(page);
  await page.getByRole('button',{name:'Запустить модель'}).click();
  await expect(page.getByText('SIMPY · РЕЗУЛЬТАТ')).toBeVisible({timeout:15000});
+ await expect(page.locator('.ris-kpi-grid')).toContainText('P95');
+ await expect(page.locator('.ris-kpi-grid')).toContainText('Зарядные посты');
+ await expect.poll(async()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(3);
  await expect(page.getByText(/Дискретно-событийная транспортная модель/)).toBeVisible();
  await page.getByRole('button',{name:'Перейти к инвестициям'}).click();
  await expect(page.getByRole('heading',{name:/Сколько стоит/})).toBeVisible();
@@ -32,7 +36,16 @@ test('one coherent experience: object → marketplace → layout → SimPy → i
  await expect(page.getByRole('heading',{name:/Проверяемый/})).toBeVisible();
  const download=page.waitForEvent('download');
  await page.getByRole('button',{name:'Скачать JSON отчёта'}).click();
- expect((await download).suggestedFilename()).toBe('ris-investment-assessment.json');
+ const receipt=await download;
+ expect(receipt.suggestedFilename()).toBe('ris-investment-assessment.json');
+ const exported=JSON.parse(await readFile(await receipt.path(),'utf8'));
+ expect(exported.simulation.engine).toBe('SimPy');
+ expect(exported.simulation.engineVersion).toBe('simpy-transport/0.3');
+ expect(exported.simulation.loadedMeters).toBeGreaterThan(0);
+ expect(exported.simulation.p95JobSeconds).toBeGreaterThan(0);
+ expect(exported.investment.annualCompleted).toBe(exported.simulation.completed*exported.financeInputs.daysPerYear);
+ expect(exported.investment.annualOpex).toBeCloseTo(exported.financeInputs.maintenanceAnnual+exported.simulation.energyKwh*exported.financeInputs.daysPerYear*exported.financeInputs.electricityPerKwh);
+ expect(exported.simulation.inputHash).toMatch(/^[a-f0-9]{64}$/);
  expect(errors).toEqual([]);
 });
 test('catalog is independent and explicitly limits unsupported simulation families',async({page})=>{
@@ -61,4 +74,29 @@ test('mobile interface keeps the full workflow reachable',async({page,isMobile})
  await expect(page.getByRole('navigation',{name:'Этапы проекта'})).toBeVisible();
  await page.getByRole('navigation',{name:'Этапы проекта'}).getByRole('button',{name:/Маркетплейс/}).click();
  await expect(page.locator('.ris-robot')).toHaveCount(44);
+});
+
+test('late response must not restore results for changed robot configuration',async({page})=>{
+ await prepareTransport(page);
+ let release:()=>void=()=>{throw new Error('route not reached');};
+ const gate=new Promise<void>(resolve=>{release=resolve;});
+ let intercepted=false;
+ await page.route('**/api/v1/ris/simulate',async route=>{
+  intercepted=true;
+  await gate;
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+   engine:'SimPy',engineVersion:'test',status:'complete',routeMeters:42,
+   created:777777,completed:777777,backlog:0,throughputPerHour:999999,
+   meanQueueMinutes:0,robotUtilization:.9,distanceMeters:100,energyKwh:10,
+   chargingHours:0,warnings:[],inputHash:'deliberately-stale',wallTimeMs:1
+  })});
+ });
+ await page.locator('.ris-run-button').click();
+ await expect.poll(()=>intercepted).toBe(true);
+ await page.locator('.ris-two-fields input').first().fill('4');
+ release();
+ await expect(page.locator('.ris-run-button')).toBeEnabled();
+ await expect(page.locator('.ris-kpi-grid')).not.toContainText('777777');
+ await page.locator('.ris-side nav button').nth(4).click();
+ await expect(page.locator('.ris-alert')).toBeVisible();
 });
