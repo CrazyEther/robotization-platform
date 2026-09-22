@@ -18,9 +18,33 @@ jobs:
       - run: npm test
       - run: npm run data:verify
       - run: npm run build
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r services/simulation/requirements.txt
+      - run: npm run sim:test
       - run: npx playwright install --with-deps chromium
       - name: Browser checks
+        env:
+          RIS_WEB_PORT: '8890'
+          RIS_SIM_PORT: '8900'
+          PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8890'
         run: |
-          npm start > /tmp/robotization-server.log 2>&1 &
-          sleep 5
+          set -euo pipefail
+          node scripts/start-ris.mjs > /tmp/ris-services.log 2>&1 &
+          RIS_PID=$!
+          trap 'kill "${RIS_PID}" 2>/dev/null || true; cat /tmp/ris-services.log' EXIT
+          for attempt in $(seq 1 40); do
+            if ! kill -0 "${RIS_PID}" 2>/dev/null; then
+              echo "RIS processes terminated during startup"
+              exit 1
+            fi
+            if curl --fail --silent http://127.0.0.1:8890/api/v1/health > /dev/null &&
+               curl --fail --silent http://127.0.0.1:8900/health > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8890/api/v1/health
+          curl --fail --silent http://127.0.0.1:8900/health
           npm run test:e2e
