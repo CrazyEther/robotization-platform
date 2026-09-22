@@ -9,7 +9,7 @@ import { validateImport } from '../../packages/importer/index';
 import * as domain from '../../packages/domain/index';
 import {assessCandidates} from '../../packages/catalog/matching';
 import {buildKnowledgeGraph} from '../../packages/catalog/knowledge';
-import {simulationSchema} from '../../packages/ris/contracts';
+import {experimentSchema,simulationSchema} from '../../packages/ris/contracts';
 
 export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; SIMULATION_ENGINE_URL?:string; SIMULATION_SERVICE_KEY?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
 type Variables = { db:SupabaseClient; userId:string };
@@ -46,6 +46,21 @@ app.post('/api/v1/ris/simulate',async c=>{
   if(!response.ok)return c.json({error:response.status===422?'Модель не может быть выполнена при заданных условиях':'Ошибка вычислительного сервиса',details:response.status===422?result:null},response.status===422?422:502);
   return c.json(result);
  }catch{return c.json({error:'Вычислительный сервис недоступен или превысил время выполнения.',code:'SIM_ENGINE_TIMEOUT'},503);}
+});
+app.post('/api/v1/ris/experiment',async c=>{
+ const parsed=experimentSchema.safeParse(await json(c.req.raw));
+ if(!parsed.success)return c.json({error:'Некорректные параметры серии экспериментов',details:parsed.error.issues.map(i=>({path:i.path.join('.'),message:i.message}))},422);
+ const estimatedJobs=parsed.data.scenario.workload.demandPerHour*parsed.data.scenario.workload.shiftHours*parsed.data.replications;
+ if(estimatedJobs>250000)return c.json({error:'Серия экспериментов превышает допустимый вычислительный объём'},422);
+ const base=c.env?.SIMULATION_ENGINE_URL,key=c.env?.SIMULATION_SERVICE_KEY;
+ if(!base||!key)return c.json({error:'Вычислительный сервис SimPy не подключён. Серия экспериментов недоступна.',code:'SIM_ENGINE_UNAVAILABLE'},503);
+ try{
+  const url=new URL('/experiments',base);
+  const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-simulation-key':key},body:JSON.stringify(parsed.data),signal:AbortSignal.timeout(55000)});
+  const result=await response.json();
+  if(!response.ok)return c.json({error:response.status===422?'Эксперимент не может быть выполнен при заданных условиях':'Ошибка вычислительного сервиса',details:response.status===422?result:null},response.status===422?422:502);
+  return c.json(result);
+ }catch{return c.json({error:'Вычислительный сервис недоступен или серия экспериментов превысила время выполнения.',code:'SIM_ENGINE_TIMEOUT'},503);}
 });
 app.post('/api/v1/simulation/replay',async c=>c.json(domain.replaySimulation(await json(c.req.raw))));
 app.post('/api/v1/simulation/flow',async c=>c.json(domain.simulateFlow(await json(c.req.raw))));

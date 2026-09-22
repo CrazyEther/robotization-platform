@@ -4,10 +4,11 @@ import heapq
 import json
 import math
 import random
+import statistics
 import time
 import simpy
 
-ENGINE_VERSION = "simpy-transport/0.3"
+ENGINE_VERSION = "simpy-transport/0.4"
 
 def route_length(layout):
     width, height = layout["width"], layout["height"]
@@ -116,3 +117,32 @@ def run_model(request):
        "warnings":["Дискретно-событийная транспортная модель: динамические столкновения, лифты, двери, безопасность и кинематика не моделируются."],
        "inputHash":hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest(),
        "wallTimeMs":round((time.perf_counter()-begin)*1000,2)}
+
+_T95={2:12.706,3:4.303,4:3.182,5:2.776,6:2.571,7:2.447,8:2.365,9:2.306,10:2.262,11:2.228,12:2.201,13:2.179,14:2.160,15:2.145,16:2.131,17:2.120,18:2.110,19:2.101,20:2.093,21:2.086,22:2.080,23:2.074,24:2.069,25:2.064,26:2.060,27:2.056,28:2.052,29:2.048,30:2.045}
+
+def _summary(values):
+    clean=[float(v) for v in values if isinstance(v,(int,float)) and math.isfinite(v)]
+    if not clean:
+        return {"mean":None,"low95":None,"high95":None,"stddev":None,"samples":0}
+    mean=sum(clean)/len(clean)
+    if len(clean)==1:
+        return {"mean":mean,"low95":mean,"high95":mean,"stddev":0.0,"samples":1}
+    stddev=statistics.stdev(clean)
+    critical=_T95.get(len(clean),1.96)
+    margin=critical*stddev/math.sqrt(len(clean))
+    return {"mean":mean,"low95":mean-margin,"high95":mean+margin,"stddev":stddev,"samples":len(clean)}
+
+def run_experiment(request,replications):
+    if not isinstance(replications,int) or replications<1 or replications>100:
+        raise ValueError("Количество репликаций должно быть целым числом от 1 до 100.")
+    base_seed=int(request.get("seed",42))
+    seeds=[]; runs=[]
+    for index in range(replications):
+        seed=((base_seed-1)+index*1009)%2147483647+1
+        scenario=json.loads(json.dumps(request))
+        scenario["seed"]=seed
+        seeds.append(seed)
+        runs.append(run_model(scenario))
+    metric_names=("created","completed","backlog","throughputPerHour","meanQueueMinutes","meanJobSeconds","p95JobSeconds","robotUtilization","chargerUtilization","energyKwh","distanceMeters","loadedMeters","emptyMeters","chargingHours")
+    metrics={name:_summary([run.get(name) for run in runs]) for name in metric_names}
+    return {"status":"complete","engine":"SimPy","engineVersion":ENGINE_VERSION,"replications":replications,"seeds":seeds,"metrics":metrics,"runs":runs}

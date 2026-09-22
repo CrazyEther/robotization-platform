@@ -53,6 +53,48 @@ class TransportTests(unittest.TestCase):
   from app import health
   from engine import ENGINE_VERSION
   self.assertEqual(asyncio.run(health())["version"],ENGINE_VERSION)
-  self.assertEqual(ENGINE_VERSION,"simpy-transport/0.3")
+  self.assertEqual(ENGINE_VERSION,"simpy-transport/0.4")
+
+ def test_experiment_summary_contract(self):
+  import engine
+  runner=getattr(engine,"run_experiment",None)
+  self.assertIsNotNone(runner,"run_experiment must exist for replicated experiments")
+  case=copy.deepcopy(BASE)
+  case["mode"]="fixed"
+  experiment=runner(case,5)
+  self.assertEqual(experiment["replications"],5)
+  self.assertEqual(experiment["engineVersion"],engine.ENGINE_VERSION)
+  completed=experiment["metrics"]["completed"]
+  self.assertEqual(completed["mean"],completed["low95"])
+  self.assertEqual(completed["mean"],completed["high95"])
+  self.assertIn("created",experiment["metrics"])
+  self.assertIn("loadedMeters",experiment["metrics"])
+  self.assertIn("emptyMeters",experiment["metrics"])
+  self.assertIn("distanceMeters",experiment["metrics"])
+  self.assertEqual(experiment["metrics"]["loadedMeters"]["mean"],experiment["runs"][0]["loadedMeters"])
+  self.assertEqual(len(experiment["seeds"]),5)
+
+ def test_poisson_experiment_is_reproducible_and_reports_uncertainty(self):
+  import engine
+  runner=getattr(engine,"run_experiment",None)
+  self.assertIsNotNone(runner,"run_experiment must exist for replicated experiments")
+  case=copy.deepcopy(BASE)
+  case["mode"]="poisson"
+  first=runner(case,12);second=runner(copy.deepcopy(case),12)
+  self.assertEqual(first["seeds"],second["seeds"])
+  self.assertEqual(first["metrics"],second["metrics"])
+  throughput=first["metrics"]["throughputPerHour"]
+  self.assertLessEqual(throughput["low95"],throughput["mean"])
+  self.assertGreaterEqual(throughput["high95"],throughput["mean"])
+  self.assertGreaterEqual(throughput["stddev"],0)
+  self.assertEqual(first["replications"],12)
+
+ def test_replicated_output_covers_all_visible_kpis(self):
+  from engine import run_experiment
+  run=run_experiment(copy.deepcopy(BASE),3)
+  for key in ("completed","backlog","throughputPerHour","robotUtilization","chargerUtilization","energyKwh","p95JobSeconds","loadedMeters","emptyMeters"):
+   self.assertIn(key,run["metrics"],f"UI depends on metric {key}")
+   self.assertEqual(run["metrics"][key]["samples"],3)
+   self.assertAlmostEqual(run["metrics"][key]["mean"],sum(r[key] for r in run["runs"])/3)
 
 if __name__=="__main__":unittest.main()

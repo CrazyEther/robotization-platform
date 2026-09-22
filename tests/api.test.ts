@@ -1,5 +1,6 @@
 import { describe,it,expect } from 'vitest';
 import app from '../apps/api/app';
+import {createScenario} from '../packages/ris/contracts';
 const post=(path:string,body:unknown)=>app.request(`/api/v1/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 describe('public API rejects insufficient inputs and unsafe access',()=>{
  it('reports live health without claiming economic readiness',async()=>{const response=await app.request('/api/v1/health');expect(response.status).toBe(200);expect((await response.json()).dataMode).toBe('source-backed-reference-catalog');expect(response.headers.get('x-content-type-options')).toBe('nosniff');});
@@ -13,4 +14,6 @@ describe('public API rejects insufficient inputs and unsafe access',()=>{
  it('rejects cross-origin writes',async()=>{const response=await app.request('/api/v1/economics',{method:'POST',headers:{Origin:'https://attacker.example','Content-Type':'application/json'},body:'{}'});expect(response.status).toBe(403);});
  it('limits oversized payloads',async()=>{const response=await app.request('/api/v1/economics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:'x'.repeat(2*1024*1024)})});expect(response.status).toBe(413);});
  it('exposes sixteen process templates',async()=>{const response=await app.request('/api/v1/process-templates');expect((await response.json()).families).toHaveLength(16);});
+ it('validates replicated experiment requests before contacting compute service',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:0})});expect(response.status).toBe(422);});
+ it('fails closed when replicated experiment compute service is unavailable',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:5})});expect(response.status).toBe(503);expect((await response.json()).code).toBe('SIM_ENGINE_UNAVAILABLE');});
 });

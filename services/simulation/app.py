@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
-from engine import ENGINE_VERSION, run_model
+from engine import ENGINE_VERSION, run_experiment, run_model
 
 app=FastAPI(title="RIS simulation service",docs_url=None,redoc_url=None)
 class Point(BaseModel):
@@ -40,6 +40,10 @@ class SimulationInput(BaseModel):
     mode:str=Field(default="fixed",pattern="^(fixed|poisson)$")
     seed:int=Field(default=42,ge=1,le=2147483647)
 
+class ExperimentInput(BaseModel):
+    scenario:SimulationInput
+    replications:int=Field(ge=1,le=100)
+
 @app.get("/health")
 async def health():
     return {"status":"ok","engine":"SimPy","version":ENGINE_VERSION}
@@ -51,5 +55,15 @@ async def simulate(body:SimulationInput,x_simulation_key:str|None=Header(default
         raise HTTPException(status_code=403,detail="Неавторизованный вызов вычислительного сервиса.")
     try:
         return await run_in_threadpool(run_model,body.model_dump())
+    except ValueError as err:
+        raise HTTPException(status_code=422,detail=str(err)) from err
+
+@app.post("/experiments")
+async def experiment(body:ExperimentInput,x_simulation_key:str|None=Header(default=None)):
+    expected=os.environ.get("SIMULATION_SERVICE_KEY")
+    if not expected or x_simulation_key!=expected:
+        raise HTTPException(status_code=403,detail="Неавторизованный вызов вычислительного сервиса.")
+    try:
+        return await run_in_threadpool(run_experiment,body.scenario.model_dump(),body.replications)
     except ValueError as err:
         raise HTTPException(status_code=422,detail=str(err)) from err
