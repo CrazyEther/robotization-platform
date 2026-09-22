@@ -8,7 +8,7 @@ import statistics
 import time
 import simpy
 
-ENGINE_VERSION = "simpy-transport/0.4"
+ENGINE_VERSION = "simpy-transport/0.5"
 
 def route_length(layout):
     width, height = layout["width"], layout["height"]
@@ -70,7 +70,6 @@ def run_model(request):
     def worker(number):
         while True:
             created=yield tasks.get()
-            start=env.now;queue_times.append(start-created)
             if battery[number] < consumption:
                 with chargers.request() as ticket:
                     yield ticket
@@ -81,6 +80,7 @@ def run_model(request):
                     result["chargingHours"]+=charge_sec/3600
                     active_charge[number]=None
                     battery[number]=robot["batteryWh"]
+            queue_times.append(env.now-created)
             busy_begin=env.now;active[number]=busy_begin
             yield env.timeout(robot["loadSeconds"])
             yield from drive(number,"loaded")

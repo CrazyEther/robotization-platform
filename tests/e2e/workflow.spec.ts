@@ -35,13 +35,14 @@ test('one coherent experience: object → marketplace → layout → SimPy → i
  await expect(page.getByText('Недостаточно данных').first()).toHaveCount(0);
  await page.getByRole('button',{name:'Сформировать отчёт'}).click();
  await expect(page.getByRole('heading',{name:/Проверяемый/})).toBeVisible();
+ await expect(page.getByText('Среднее ожидание до обслуживания (включая зарядку)')).toBeVisible();
  const download=page.waitForEvent('download');
  await page.getByRole('button',{name:'Скачать JSON отчёта'}).click();
  const receipt=await download;
  expect(receipt.suggestedFilename()).toBe('ris-investment-assessment.json');
  const exported=JSON.parse(await readFile(await receipt.path(),'utf8'));
  expect(exported.simulation.engine).toBe('SimPy');
- expect(exported.simulation.engineVersion).toBe('simpy-transport/0.4');
+ expect(exported.simulation.engineVersion).toBe('simpy-transport/0.5');
  expect(exported.experiment.replications).toBe(1);
  expect(exported.experiment.metrics.completed.mean).toBe(exported.simulation.completed);
  expect(exported.simulation.loadedMeters).toBeGreaterThan(0);
@@ -153,7 +154,7 @@ test('incompatible compute response must not crash the project or unlock finance
  await prepareTransport(page);
  await page.route('**/api/v1/ris/experiment',route=>route.fulfill({
   status:200,contentType:'application/json',
-  body:JSON.stringify({status:'complete',engine:'SimPy',engineVersion:'simpy-transport/0.4',replications:1,seeds:[42],
+  body:JSON.stringify({status:'complete',engine:'SimPy',engineVersion:'simpy-transport/0.5',replications:1,seeds:[42],
    metrics:{completed:{mean:12,low95:12,high95:12,stddev:0,samples:1}},runs:[{completed:12}]})
  }));
  await page.getByRole('button',{name:'Запустить модель'}).click();
@@ -162,4 +163,21 @@ test('incompatible compute response must not crash the project or unlock finance
  await expect(page.getByRole('heading',{name:/Не удалось открыть приложение/})).toHaveCount(0);
  await page.getByRole('navigation',{name:'Этапы проекта'}).getByRole('button',{name:/Экономика/}).click();
  await expect(page.getByText(/Сначала выполните имитацию процесса/)).toBeVisible();
+});
+
+test('simulator API includes recharge before service in queue waiting time',async({request})=>{
+ const scenario={
+  sector:'warehouse',
+  layout:{width:8,height:8,pickup:{x:1,y:1},dropoff:{x:2,y:1},obstacles:[]},
+  workload:{demandPerHour:8,loadKg:1,shiftHours:.25},
+  robot:{count:1,payloadKg:5,speedMps:1,loadSeconds:0,unloadSeconds:0,batteryWh:10,chargeW:240,whPerMeter:4,chargerCount:1},
+  mode:'fixed',seed:42
+ };
+ const response=await request.post('/api/v1/ris/experiment',{data:{scenario,replications:1}});
+ expect(response.status()).toBe(200);
+ const experiment=await response.json();
+ expect(experiment.engineVersion).toBe('simpy-transport/0.5');
+ expect(experiment.runs[0].completed).toBe(2);
+ expect(experiment.runs[0].meanQueueMinutes).toBeCloseTo(1,8);
+ expect(experiment.metrics.meanQueueMinutes.mean).toBeCloseTo(1,8);
 });

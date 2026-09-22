@@ -42,6 +42,19 @@ class TransportTests(unittest.TestCase):
   self.assertAlmostEqual(result["meanJobSeconds"],600)
   self.assertAlmostEqual(result["p95JobSeconds"],600)
 
+ def test_queue_wait_includes_robot_charging_before_task_service(self):
+  case=copy.deepcopy(BASE)
+  case["layout"]={"width":8,"height":8,"pickup":{"x":1,"y":1},"dropoff":{"x":2,"y":1},"obstacles":[]}
+  case["workload"]={"demandPerHour":8,"loadKg":1,"shiftHours":.25}
+  case["robot"].update(count=1,payloadKg=5,speedMps=1,loadSeconds=0,unloadSeconds=0,batteryWh=10,chargeW=240,whPerMeter=4,chargerCount=1)
+  measured=run_model(case)
+  self.assertEqual(measured["created"],2)
+  self.assertEqual(measured["completed"],2)
+  self.assertAlmostEqual(measured["meanQueueMinutes"],1,places=6)
+  no_charging=copy.deepcopy(case)
+  no_charging["robot"]["batteryWh"]=1000
+  self.assertAlmostEqual(run_model(no_charging)["meanQueueMinutes"],0,places=6)
+
  def test_fixed_arrivals_match_requested_shift_volume(self):
   case=copy.deepcopy(BASE)
   case["workload"]["demandPerHour"]=500
@@ -53,7 +66,7 @@ class TransportTests(unittest.TestCase):
   from app import health
   from engine import ENGINE_VERSION
   self.assertEqual(asyncio.run(health())["version"],ENGINE_VERSION)
-  self.assertEqual(ENGINE_VERSION,"simpy-transport/0.4")
+  self.assertEqual(ENGINE_VERSION,"simpy-transport/0.5")
 
  def test_experiment_summary_contract(self):
   import engine
