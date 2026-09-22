@@ -11,8 +11,15 @@ const env={...process.env,SIMULATION_SERVICE_KEY:key,SIMULATION_ENGINE_URL:'http
 const defaultPython=process.platform==='win32'?'python':'python3';
 const pythonFromEnv=process.env.RIS_PYTHON;
 const allowedPythonNames=new Set(['python','python3','py']);
-const allowedAbsolutePythonPath=/^(\/[A-Za-z0-9._-]+)+$|^[A-Za-z]:\\[A-Za-z0-9._\\-\\]+$/;
-const python=pythonFromEnv&&(allowedPythonNames.has(pythonFromEnv)||allowedAbsolutePythonPath.test(pythonFromEnv))?pythonFromEnv:defaultPython;
+const allowedAbsolutePythonPath=/^(\/[A-Za-z0-9._\-]+)+$|^[A-Za-z]:\\(?:[A-Za-z0-9._\-]+\\)*[A-Za-z0-9._\-]+(\.exe)?$/;
+let python=defaultPython;
+if(pythonFromEnv){
+ if(allowedPythonNames.has(pythonFromEnv)&&!pythonFromEnv.includes('..')){
+  python=pythonFromEnv;
+ }else if(allowedAbsolutePythonPath.test(pythonFromEnv)&&!pythonFromEnv.includes('..')){
+  python=pythonFromEnv;
+ }
+}
 const simulation=spawn(python,['-m','uvicorn','app:app','--app-dir','services/simulation','--host','127.0.0.1','--port',String(simulationPort)],{cwd,env,stdio:'inherit'});
 const api=spawn(process.execPath,[resolve(cwd,'node_modules','tsx','dist','cli.mjs'),'apps/api/server.ts'],{cwd,env,stdio:'inherit'});
 const children=[simulation,api];let stopping=false;
