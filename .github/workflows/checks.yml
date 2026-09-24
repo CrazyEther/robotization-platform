@@ -77,3 +77,26 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:8978/api/v1/config | grep -q '"publicPreview":true'
           npx playwright test tests/e2e/preview.spec.ts --reporter=list
+  jaamsim-windows-java27:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '27'
+      - run: python -m pip install -r services/simulation/requirements.txt
+      - run: python scripts/install_jaamsim.py
+      - name: Check JaamSim process model on Windows Java 27
+        shell: pwsh
+        run: |
+          java --version
+          python -m unittest discover -s services/simulation -p test_jaamsim.py -v
+          if ($LASTEXITCODE -ne 0) {
+            python scripts/diagnose_jaamsim.py
+            exit 1
+          }

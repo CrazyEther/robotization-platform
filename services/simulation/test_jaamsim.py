@@ -22,6 +22,27 @@ class JaamSimComparisonTests(unittest.TestCase):
                        "annualMaintenanceRub":120000, "electricityRubPerKwh":8,
                        "workdaysPerYear":250, "horizonYears":5, "discountRatePercent":12,
                        "annualRequiredJobs":10000, "marginRubPerAdditionalJob":150}
+    def test_report_header_uses_pinned_release_when_version_field_is_missing(self):
+        from jaamsim_engine import _validate_report_metadata
+        header="Simulation\tSoftwareName\tJaamSim\t-\nSimulation\tConfigurationFile\trun.cfg\t-\n"
+        self.assertEqual(_validate_report_metadata(header),"2026-05")
+
+    def test_report_header_accepts_spaces_and_bom_without_weakening_version_check(self):
+        from jaamsim_engine import _validate_report_metadata
+        header="\ufeffSimulation\tSoftwareName\tJaamSim\t-\nSimulation    SoftwareVersion    2026-05    -\n"
+        self.assertEqual(_validate_report_metadata(header),"2026-05")
+
+    def test_report_header_rejects_a_different_declared_jaamsim_version(self):
+        from jaamsim_engine import _validate_report_metadata, JaamSimUnavailable
+        header="Simulation\tSoftwareName\tJaamSim\t-\nSimulation\tSoftwareVersion\t2025-01\t-\n"
+        with self.assertRaisesRegex(JaamSimUnavailable,"2025-01"):
+            _validate_report_metadata(header)
+
+    def test_report_header_rejects_an_unidentified_engine(self):
+        from jaamsim_engine import _validate_report_metadata, JaamSimUnavailable
+        with self.assertRaises(JaamSimUnavailable):
+            _validate_report_metadata("Simulation\tSoftwareName\tUnknownEngine\t-\n")
+
     def test_independent_baseline_and_robot_scenarios_use_real_jaamsim(self):
         from jaamsim_engine import JaamSimUnavailable
         out = self.run_comparison(self.case, self.inputs, [1,2,4])

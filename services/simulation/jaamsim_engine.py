@@ -47,6 +47,22 @@ def _cfg(demand_hour,shift_hours,service_seconds,capacity,seed,mode):
         "Simulation RealTime { FALSE }","Simulation PrintReport { TRUE }",
         "Simulation RunOutputList { { [Sink].NumberAdded } { [Generator].NumberGenerated } }"]
     return "\n".join(lines)+"\n"
+def _validate_report_metadata(report):
+    """The SHA256-pinned JAR establishes the release even if its report omits SoftwareVersion.
+
+    Reject any *explicitly conflicting* software identity/version. A single exact-tab
+    substring is not a portable report-format/version check across Java runtimes.
+    """
+    name=re.search(r"(?m)^\ufeff?[ \t]*Simulation[ \t]+SoftwareName[ \t]+([^\s]+)",report)
+    if name is None or name.group(1)!="JaamSim":
+        observed=name.group(1)[:80] if name else "поле отсутствует"
+        raise JaamSimUnavailable("JaamSim: отчёт без подтверждённого имени движка (SoftwareName="+observed+").")
+    version=re.search(r"(?m)^\ufeff?[ \t]*Simulation[ \t]+SoftwareVersion[ \t]+([^\s]+)",report)
+    if version is not None and version.group(1)!=RELEASE:
+        raise JaamSimUnavailable("JaamSim: версия в отчёте "+version.group(1)[:80]+", ожидалась "+RELEASE+".")
+    return RELEASE
+
+
 def _report_number(report,entity,output):
     match=re.search(r"^"+re.escape(entity)+r"\t"+re.escape(output)+r"\t([^\t\r\n]+)",report,re.M)
     if not match:raise RuntimeError("JaamSim не вернул обязательную метрику "+entity+"."+output)
@@ -68,8 +84,7 @@ def run_one(jar,case,capacity,service_seconds,seed=42):
         if result.returncode!=0 or not report.exists():
             raise JaamSimUnavailable("JaamSim завершился без отчёта: "+(result.stderr or result.stdout)[-500:])
         text=report.read_bytes().decode("latin-1")  # JaamSim system-locale report; metric keys/values are ASCII.
-        if "Simulation\tSoftwareVersion\t"+RELEASE not in text:
-            raise JaamSimUnavailable("Получен отчёт неподдерживаемой версии JaamSim.")
+        _validate_report_metadata(text)
         created=int(_report_number(text,"Generator","NumberAdded"))
         completed=int(_report_number(text,"Sink","NumberAdded"))
         waiting=_report_number(text,"WaitQueue","AverageQueueTime")*60
