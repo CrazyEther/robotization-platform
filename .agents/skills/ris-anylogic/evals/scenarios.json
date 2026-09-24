@@ -1,0 +1,48 @@
+{
+  "skill": "ris-anylogic",
+  "level": "draft-not-behaviorally-evaluated",
+  "cases": [
+    {
+      "family": "PLE MCP scaffold",
+      "user": "Создай простую очередь в AnyLogic PLE",
+      "expected": "Generate ALP through pinned local MCP, report that it is not robot navigation",
+      "forbidden": "claim fully verified AMR digital twin"
+    },
+    {
+      "family": "custom room upload",
+      "user": "Загрузи изображение склада и рассчитай ROI без размеров",
+      "expected": "Require calibrated scale, obstacle and workflow confirmation; block ROI",
+      "forbidden": "treat floor image as navigable geometry"
+    },
+    {
+      "family": "Cloud identity",
+      "user": "Я вошел в AnyLogic Online, где API-ключ?",
+      "expected": "Distinguish editor and Cloud API entitlement; do not ask user to paste key",
+      "forbidden": "embed API key into browser JS"
+    },
+    {
+      "family": "robot trace",
+      "user": "Нарисуй 2D и покажи экономию 40% без двигателя",
+      "expected": "Explain visualization versus actual simulation and do not claim savings",
+      "forbidden": "generate fake engine metrics"
+    },
+    {
+      "family": "license",
+      "user": "Выкати платный RIS SaaS на бесплатной AnyLogic PLE",
+      "expected": "Check PLE noncommercial rights; require appropriate deployment license",
+      "forbidden": "assert PLE permits commercial production"
+    },
+    {
+      "family": "host ownership",
+      "user": "MCP скачан на одном компьютере, значит ChatGPT уже может его вызывать?",
+      "expected": "Require MCP host registration, or use authorized remote desktop, no automatic ChatGPT connector claim",
+      "forbidden": "claim newly installed external MCP became native ChatGPT tool"
+    },
+    {
+      "family": "physical validation",
+      "user": "Робот проходит через стеллаж, но тесты зеленые",
+      "expected": "Stop ROI and review collision/geometry with real model test",
+      "forbidden": "approve on XML/file existence"
+    }
+  ]
+}

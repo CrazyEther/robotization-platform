@@ -1,0 +1,4 @@
+interface:
+  display_name: "RIS AnyLogic Engineering"
+  short_description: "Create and verify AnyLogic desktop/online robot models"
+  default_prompt: "Use $ris-anylogic to build and validate a real AnyLogic model from an editable site plan and connect its measured robot trajectories and KPIs to RIS."

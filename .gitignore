@@ -4,6 +4,7 @@ dist/
 .env.*
 !.env.example
 .tools/
+.mcp.json
 data/raw/
 data/imports/
 output/
