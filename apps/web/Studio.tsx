@@ -2,12 +2,14 @@ import {useMemo,useRef,useState} from 'react';
 import {ArrowRight,ArrowUpRight,BarChart3,Box,Check,ChevronRight,Download,Factory,FileText,HeartPulse,Info,MapPinned,Plane,Play,RotateCcw,Search,Settings2,ShieldAlert,ShoppingBag,Warehouse} from 'lucide-react';
 import registry from '../../data/catalog.json';
 import {createScenario,evaluateExperimentInvestment,experimentResultSchema,gridRoute,sectorTemplates,simulationSchema,type ExperimentResult,type FinanceInput,type MetricSummary,type Sector,type SimulationInput,type SimulationResult} from '../../packages/ris/contracts';
+import CompareStudio from './CompareStudio';
+import {initialCompareFinance,type CompareFinance,type ComparisonResult} from '../../packages/ris/compare';
 import './studio.css';
 
-type Screen='welcome'|'object'|'market'|'layout'|'simulation'|'finance'|'report';
+type Screen='welcome'|'object'|'market'|'layout'|'simulation'|'compare'|'finance'|'report';
 type Product=(typeof registry.products)[number];
 const sectors:[Sector,typeof Warehouse][]=[['warehouse',Warehouse],['factory',Factory],['hospital',HeartPulse],['airport',Plane]];
-const flow:[Screen,string,typeof Box][]=[['object','Объект',Box],['market','Маркетплейс',ShoppingBag],['layout','Планировка',MapPinned],['simulation','Симуляция',Play],['finance','Экономика',BarChart3],['report','Результат',FileText]];
+const flow:[Screen,string,typeof Box][]=[['object','Объект',Box],['market','Маркетплейс',ShoppingBag],['layout','Планировка',MapPinned],['simulation','Симуляция',Play],['compare','Сценарии JaamSim',BarChart3],['finance','Экономика',BarChart3],['report','Результат',FileText]];
 const currency=(value:number)=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(value)+' ₽';
 const numeric=(value:number,digits=1)=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:digits}).format(value);
 const interval=(metric:MetricSummary,digits=1,suffix='',scale=1)=>metric.mean==null?'—':metric.samples>1?`${numeric(metric.mean*scale,digits)}${suffix} · 95% [${numeric((metric.low95??metric.mean)*scale,digits)}–${numeric((metric.high95??metric.mean)*scale,digits)}]`:`${numeric(metric.mean*scale,digits)}${suffix}`;
@@ -18,18 +20,19 @@ function download(name:string,data:unknown){const href=URL.createObjectURL(new B
 export default function Studio(){
  const [screen,setScreen]=useState<Screen>('welcome'),[scenario,setScenario]=useState<SimulationInput>(()=>createScenario('warehouse')),[selected,setSelected]=useState<string|null>(null);
  const [finance,setFinance]=useState<FinanceInput>(initialFinance),[result,setResult]=useState<SimulationResult|null>(null),[experiment,setExperiment]=useState<ExperimentResult|null>(null),[replications,setReplications]=useState(1),[running,setRunning]=useState(false),[error,setError]=useState('');
+ const [comparisonFinance,setComparisonFinance]=useState<CompareFinance>(initialCompareFinance),[comparison,setComparison]=useState<ComparisonResult|null>(null);
  const [query,setQuery]=useState(''),[filter,setFilter]=useState('all'),[grabbed,setGrabbed]=useState<'pickup'|'dropoff'|null>(null);
  const canvasRef=useRef<SVGSVGElement>(null),generationRef=useRef(0),chosen=registry.products.find(p=>p.id===selected)??null;
  const route=useMemo(()=>gridRoute(scenario.layout),[scenario.layout]),valid=simulationSchema.safeParse(scenario).success;
  const estimate=useMemo(()=>{if(!experiment)return null;try{return evaluateExperimentInvestment(scenario,experiment,finance);}catch{return null;}},[scenario,experiment,finance]);
  const setTab=(s:Screen)=>{setScreen(s);setError('');window.scrollTo({top:0,behavior:'instant'});};
- const change=(update:(prev:SimulationInput)=>SimulationInput)=>{generationRef.current++;setScenario(old=>update(old));setResult(null);setExperiment(null);setRunning(false);setError('');};
+ const change=(update:(prev:SimulationInput)=>SimulationInput)=>{generationRef.current++;setScenario(old=>update(old));setResult(null);setExperiment(null);setComparison(null);setRunning(false);setError('');};
  const field=(key:keyof SimulationInput['workload'],value:number)=>change(old=>({...old,workload:{...old.workload,[key]:value}}));
  const robotField=(key:keyof SimulationInput['robot'],value:number)=>change(old=>({...old,robot:{...old.robot,[key]:value}}));
  const financeField=(key:keyof FinanceInput,value:number)=>setFinance(old=>({...old,[key]:value}));
  const setExperimentReplications=(value:number)=>{generationRef.current++;setReplications(Math.max(1,Math.min(100,Math.trunc(value||1))));setResult(null);setExperiment(null);setRunning(false);setError('');};
- const chooseSector=(value:Sector)=>{generationRef.current++;setScenario(createScenario(value));setSelected(null);setResult(null);setExperiment(null);setReplications(1);setRunning(false);setFinance(initialFinance);setTab('object');};
- const chooseProduct=(product:Product)=>{if(product.familyId!=='transport')return;generationRef.current++;setResult(null);setExperiment(null);setRunning(false);setSelected(product.id);const payload=getCharacteristic(product,'payload');if(typeof payload==='number'&&payload>0)robotField('payloadKg',payload);setTab('layout');};
+ const chooseSector=(value:Sector)=>{generationRef.current++;setScenario(createScenario(value));setSelected(null);setResult(null);setExperiment(null);setComparison(null);setComparisonFinance(initialCompareFinance);setReplications(1);setRunning(false);setFinance(initialFinance);setTab('object');};
+ const chooseProduct=(product:Product)=>{if(product.familyId!=='transport')return;generationRef.current++;setResult(null);setExperiment(null);setComparison(null);setRunning(false);setSelected(product.id);const payload=getCharacteristic(product,'payload');if(typeof payload==='number'&&payload>0)robotField('payloadKg',payload);setTab('layout');};
  const onMove=(event:React.PointerEvent<SVGSVGElement>)=>{if(!grabbed)return;const rect=canvasRef.current?.getBoundingClientRect();if(!rect)return;const x=Math.max(0,Math.min(scenario.layout.width-1,Math.floor((event.clientX-rect.left)/rect.width*scenario.layout.width)));const y=Math.max(0,Math.min(scenario.layout.height-1,Math.floor((event.clientY-rect.top)/rect.height*scenario.layout.height)));change(old=>({...old,layout:{...old.layout,[grabbed]:{x,y}}}));};
  async function execute(){const generation=++generationRef.current;setRunning(true);setError('');setResult(null);setExperiment(null);try{const res=await fetch('/api/v1/ris/experiment',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({scenario,replications})});const body=await res.json();if(generationRef.current!==generation)return;if(!res.ok)throw new Error(body.error??'Ошибка серии экспериментов');const compatible=experimentResultSchema.safeParse(body);if(!compatible.success)throw new Error('Несовместимый или неполный ответ вычислительного сервиса: проверьте версию SimPy и перезапустите сервис.');const next=compatible.data as ExperimentResult;setExperiment(next);setResult(next.runs[0]??null);}catch(e){if(generationRef.current===generation)setError(e instanceof Error?e.message:'Сервис недоступен');}finally{if(generationRef.current===generation)setRunning(false);}}
 
@@ -50,7 +53,7 @@ export default function Studio(){
    <div className="ris-workspace"><aside className="ris-side"><div className="ris-side-kicker">РАБОЧЕЕ ПРОСТРАНСТВО / 01</div><h2>Модель<br/>объекта.</h2><div className="ris-side-context"><span className="ris-status-dot"/> {sectorTemplates[scenario.sector].title}<small>Транспортная операция · демонстрационный шаблон</small></div>
     <nav aria-label="Этапы проекта">{flow.map(([key,label,Icon],i)=><button key={key} className={screen===key?'active':''} onClick={()=>setTab(key)}><span className="ris-nav-index">0{i+1}</span><Icon size={18}/><strong>{label}</strong><ChevronRight size={16}/></button>)}</nav>
     <div className="ris-side-end"><Info size={18}/> Физическая проходимость, безопасность и точность паспортных характеристик требуют инженерной проверки.</div></aside>
-    <main className="ris-content"><div className="ris-content-top"><span>RIS / PROJECT STUDIO</span><div><span className="ris-project-pill">{result?'Результат моделирования получен':'Оценка · исходные данные'}</span><button onClick={()=>download('ris-project.json',{version:2,scenario,selected,finance,replications,result,experiment,estimate})}><Download size={16}/> Экспорт проекта</button></div></div>
+    <main className="ris-content"><div className="ris-content-top"><span>RIS / PROJECT STUDIO</span><div><span className="ris-project-pill">{result||comparison?'Результат моделирования получен':'Оценка · исходные данные'}</span><button onClick={()=>download('ris-project.json',{version:3,scenario,selected,finance,replications,result,experiment,estimate,comparisonFinance,comparison})}><Download size={16}/> Экспорт проекта</button></div></div>
 
      {screen==='object'&&<><div className="ris-page-heading"><span className="ris-mini-label">ЭТАП 01 / КОНТЕКСТ</span><h1>Что будем<br/><em>роботизировать?</em></h1><p>Начните с задачи и реального объёма работ. Шаблоны ниже — демонстрационные, а не модель вашего предприятия.</p></div>
       <div className="ris-work-card"><h3>01. Тип объекта</h3><div className="ris-type-grid">{sectors.map(([key,Icon])=><button key={key} className={scenario.sector===key?'selected':''} onClick={()=>chooseSector(key)}><Icon size={28}/><strong>{sectorTemplates[key].title}</strong><small>{sectorTemplates[key].operation}</small>{scenario.sector===key&&<Check size={20}/>}</button>)}</div></div>
@@ -99,6 +102,10 @@ export default function Studio(){
         {experiment&&<p className="ris-result-note">Серия из {experiment.replications} прогонов. Выполнено за смену: {interval(experiment.metrics.completed,1)}. Производительность: {interval(experiment.metrics.throughputPerHour,2,'/ч')}. Энергия: {interval(experiment.metrics.energyKwh,2,' кВт·ч')}. Финансовый расчёт использует средние значения серии.</p>}
         <p className="ris-result-note">{result?result.warnings.join(' '):'Показатели появятся после успешного запуска вычислительного сервиса. Декоративная схема не является записью физического движения.'}</p>
         {result&&<button className="ris-primary" onClick={()=>setTab('finance')}>Перейти к инвестициям <ArrowRight size={17}/></button>}</div></div></>}
+     {screen==='compare'&&<CompareStudio key={selected+'-'+JSON.stringify(scenario)}
+       scenario={scenario} robotName={chosen?.name??null} finance={comparisonFinance}
+       onFinance={setComparisonFinance} result={comparison} onResult={setComparison}
+       onMarket={()=>setTab('market')}/>}
      {screen==='finance'&&<><div className="ris-page-heading"><span className="ris-mini-label">ЭТАП 05 / INVESTMENT INTELLIGENCE</span><h1>Сколько стоит<br/><em>изменить процесс?</em></h1><p>Финансовые показатели привязаны к результату последнего эксперимента. Данные о стоимости и реализуемой экономии нужно подтвердить отдельно.</p></div>
        {!result&&<div role="alert" className="ris-alert"><Info size={20}/> Сначала выполните имитацию процесса. Без результатов модели ROI и окупаемость не рассчитываются. <button onClick={()=>setTab('simulation')}>К симуляции <ArrowRight size={16}/></button></div>}
        <div className="ris-finance-grid"><div className="ris-work-card"><h3>Исходные данные, ₽</h3><div className="ris-fields ris-two-fields">

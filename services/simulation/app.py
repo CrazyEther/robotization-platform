@@ -1,11 +1,14 @@
 """Compute service. Run separately from Cloudflare Workers."""
 import os
+from threading import BoundedSemaphore
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from engine import ENGINE_VERSION, run_experiment, run_model
+from jaamsim_engine import JaamSimUnavailable, installed_jar, run_comparison
 
 app=FastAPI(title="RIS simulation service",docs_url=None,redoc_url=None)
+jaamsim_slots=BoundedSemaphore(value=1)
 class Point(BaseModel):
     x:int=Field(ge=0,le=300)
     y:int=Field(ge=0,le=300)
@@ -67,3 +70,41 @@ async def experiment(body:ExperimentInput,x_simulation_key:str|None=Header(defau
         return await run_in_threadpool(run_experiment,body.scenario.model_dump(),body.replications)
     except ValueError as err:
         raise HTTPException(status_code=422,detail=str(err)) from err
+
+class ComparisonFinance(BaseModel):
+    baselineWorkers:int=Field(ge=1,le=100)
+    baselineTaskSeconds:float=Field(gt=0,le=86400)
+    baselineAnnualCostRub:float=Field(ge=0,le=1e12)
+    residualHumanCostAnnualRub:float=Field(ge=0,le=1e12)
+    robotUnitPriceRub:float=Field(ge=0,le=1e12)
+    installationRub:float=Field(ge=0,le=1e12)
+    infrastructureRub:float=Field(ge=0,le=1e12)
+    chargersRub:float=Field(ge=0,le=1e12)
+    annualMaintenanceRub:float=Field(ge=0,le=1e12)
+    electricityRubPerKwh:float=Field(ge=0,le=1e9)
+    workdaysPerYear:int=Field(ge=1,le=366)
+    horizonYears:int=Field(ge=1,le=30)
+    discountRatePercent:float=Field(ge=0,le=100)
+    annualRequiredJobs:int=Field(ge=1,le=10000000)
+    marginRubPerAdditionalJob:float=Field(ge=0,le=1e9)
+
+class CompareInput(BaseModel):
+    scenario:SimulationInput
+    finance:ComparisonFinance
+    robotCounts:list[int]=Field(min_length=1,max_length=4)
+
+@app.post("/comparison/jaamsim")
+async def compare_jaamsim(body:CompareInput,x_simulation_key:str|None=Header(default=None)):
+    expected=os.environ.get("SIMULATION_SERVICE_KEY")
+    if not expected or x_simulation_key!=expected:raise HTTPException(status_code=403,detail="Unauthorized")
+    if not jaamsim_slots.acquire(blocking=False):
+        raise HTTPException(status_code=429,detail="JaamSim занят вычислением другого проекта; повторите запрос позже.")
+    try:
+        return await run_in_threadpool(run_comparison,body.scenario.model_dump(),
+                                       body.finance.model_dump(),body.robotCounts)
+    except JaamSimUnavailable as exc:
+        raise HTTPException(status_code=503,detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422,detail=str(exc)) from exc
+    finally:
+        jaamsim_slots.release()

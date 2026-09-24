@@ -15,5 +15,13 @@ describe('public API rejects insufficient inputs and unsafe access',()=>{
  it('limits oversized payloads',async()=>{const response=await app.request('/api/v1/economics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:'x'.repeat(2*1024*1024)})});expect(response.status).toBe(413);});
  it('exposes sixteen process templates',async()=>{const response=await app.request('/api/v1/process-templates');expect((await response.json()).families).toHaveLength(16);});
  it('validates replicated experiment requests before contacting compute service',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:0})});expect(response.status).toBe(422);});
+ it('validates and gates JaamSim baseline-vs-robot financial comparisons',async()=>{
+ const scenario=createScenario('warehouse');
+ const finance={baselineWorkers:2,baselineTaskSeconds:180,baselineAnnualCostRub:2400000,residualHumanCostAnnualRub:300000,robotUnitPriceRub:1000000,installationRub:100000,infrastructureRub:100000,chargersRub:50000,annualMaintenanceRub:100000,electricityRubPerKwh:8,workdaysPerYear:250,horizonYears:5,discountRatePercent:12,annualRequiredJobs:12000,marginRubPerAdditionalJob:100};
+ const send=async(robotCounts:number[],financeOverrides:Record<string,number>={})=>app.request('/api/v1/ris/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario,finance:{...finance,...financeOverrides},robotCounts})});
+ expect((await send([1,1])).status).toBe(422);
+ expect((await send([2],{annualRequiredJobs:10000000})).status).toBe(422);
+ const response=await send([1,2,4]);expect(response.status).toBe(503);expect((await response.json()).code).toBe('JAAMSIM_UNAVAILABLE');
+ });
  it('fails closed when replicated experiment compute service is unavailable',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:5})});expect(response.status).toBe(503);expect((await response.json()).code).toBe('SIM_ENGINE_UNAVAILABLE');});
 });

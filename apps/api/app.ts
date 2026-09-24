@@ -10,6 +10,7 @@ import * as domain from '../../packages/domain/index';
 import {assessCandidates} from '../../packages/catalog/matching';
 import {buildKnowledgeGraph} from '../../packages/catalog/knowledge';
 import {experimentSchema,simulationSchema} from '../../packages/ris/contracts';
+import {comparisonRequestSchema,comparisonResultSchema} from '../../packages/ris/compare';
 
 export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; SIMULATION_ENGINE_URL?:string; SIMULATION_SERVICE_KEY?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
 type Variables = { db:SupabaseClient; userId:string };
@@ -61,6 +62,20 @@ app.post('/api/v1/ris/experiment',async c=>{
   if(!response.ok)return c.json({error:response.status===422?'Эксперимент не может быть выполнен при заданных условиях':'Ошибка вычислительного сервиса',details:response.status===422?result:null},response.status===422?422:502);
   return c.json(result);
  }catch{return c.json({error:'Вычислительный сервис недоступен или серия экспериментов превысила время выполнения.',code:'SIM_ENGINE_TIMEOUT'},503);}
+});
+app.post('/api/v1/ris/compare',async c=>{
+ const parsed=comparisonRequestSchema.safeParse(await json(c.req.raw));
+ if(!parsed.success)return c.json({error:'Некорректные данные сравнения вариантов',details:parsed.error.issues.map(x=>({path:x.path.join('.'),message:x.message}))},422);
+ const input=parsed.data,base=c.env?.SIMULATION_ENGINE_URL,key=c.env?.SIMULATION_SERVICE_KEY;
+ if(!base||!key)return c.json({error:'Профессиональный движок JaamSim не подключён',code:'JAAMSIM_UNAVAILABLE'},503);
+ try{
+  const response=await fetch(new URL('/comparison/jaamsim',base),{method:'POST',headers:{'content-type':'application/json','x-simulation-key':key},body:JSON.stringify(input),signal:AbortSignal.timeout(55000)});
+  const body=await response.json();
+  if(!response.ok)return c.json({error:response.status===429?'JaamSim занят другим расчётом. Повторите запуск после его завершения.':response.status===503?'JaamSim не установлен или недоступен':response.status===422?'Сценарий не может быть смоделирован':'JaamSim вернул ошибку',details:response.status===422?body?.detail:undefined},response.status===422?422:response.status===503?503:response.status===429?429:502);
+  const checked=comparisonResultSchema.safeParse(body);
+  if(!checked.success)return c.json({error:'Несовместимый отчёт JaamSim',code:'JAAMSIM_INVALID_OUTPUT'},502);
+  return c.json(checked.data);
+ }catch{return c.json({error:'Сервис JaamSim недоступен или превысил время вычисления',code:'JAAMSIM_TIMEOUT'},503);}
 });
 app.post('/api/v1/simulation/replay',async c=>c.json(domain.replaySimulation(await json(c.req.raw))));
 app.post('/api/v1/simulation/flow',async c=>c.json(domain.simulateFlow(await json(c.req.raw))));

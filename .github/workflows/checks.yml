@@ -22,7 +22,16 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r services/simulation/requirements.txt
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm run jaamsim:install
       - run: npm run sim:test
+      - name: Verify compute container and pinned professional engine
+        run: |
+          docker build -t ris-simulation:ci services/simulation
+          docker run --rm ris-simulation:ci python -c "import app,jaamsim_engine; assert jaamsim_engine.installed_jar().is_file()"
       - run: npx playwright install --with-deps chromium
       - name: Browser checks
         env:

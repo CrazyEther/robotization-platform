@@ -101,7 +101,7 @@ test('late response must not restore results for changed robot configuration',as
  release();
  await expect(page.locator('.ris-run-button')).toBeEnabled();
  await expect(page.locator('.ris-kpi-grid')).not.toContainText('777777');
- await page.locator('.ris-side nav button').nth(4).click();
+ await page.getByRole('navigation',{name:'Этапы проекта'}).getByRole('button',{name:/Экономика/}).click();
  await expect(page.locator('.ris-alert')).toBeVisible();
 });
 
@@ -180,4 +180,38 @@ test('simulator API includes recharge before service in queue waiting time',asyn
  expect(experiment.runs[0].completed).toBe(2);
  expect(experiment.runs[0].meanQueueMinutes).toBeCloseTo(1,8);
  expect(experiment.metrics.meanQueueMinutes.mean).toBeCloseTo(1,8);
+});
+
+test('JaamSim models current and robotic processes, compares peak load and derives ROI',async({page})=>{
+ await prepareTransport(page);
+ await page.getByRole('navigation',{name:'Этапы проекта'}).getByRole('button',{name:/Сценарии JaamSim/}).click();
+ await expect(page.getByRole('heading',{name:/До робота/})).toBeVisible();
+ await page.getByRole('spinbutton',{name:'Время текущей операции, с'}).fill('300');
+ await page.getByRole('spinbutton',{name:'Денежные расходы текущего процесса, ₽/год'}).fill('5000000');
+ await page.getByRole('spinbutton',{name:'Сохраняемые расходы на персонал, ₽/год'}).fill('300000');
+ await page.getByRole('spinbutton',{name:'Цена одного робота, ₽'}).fill('1000000');
+ await page.getByRole('spinbutton',{name:'Обслуживание одного робота, ₽/год'}).fill('100000');
+ await page.getByRole('spinbutton',{name:'Тариф электроэнергии, ₽/кВт·ч'}).fill('8');
+ await page.getByRole('button',{name:/Сравнить процесс и инвестиции/}).click();
+ await expect(page.getByRole('heading',{name:/JaamSim 2026-05/})).toBeVisible({timeout:45000});
+ await expect(page.locator('.ris-comparison-table').first()).toContainText('ПИК · текущий процесс, 125%');
+ await expect(page.locator('.ris-comparison-table').first()).toContainText('Роботизация · 3 роботов');
+ const receipt=page.waitForEvent('download');
+ await page.getByRole('button',{name:/Экспорт всех экспериментов/}).click();
+ const data=JSON.parse(await readFile(await (await receipt).path(),'utf8'));
+ expect(data.comparison.engine).toBe('JaamSim');
+ expect(data.comparison.engineVersion).toBe('2026-05');
+ expect(data.comparison.baseline.arrived).toBe(data.comparison.options[0].arrived);
+ expect(data.comparison.peak.baseline.arrived).toBeGreaterThan(data.comparison.baseline.arrived);
+ expect(data.comparison.options).toHaveLength(3);
+ expect(data.comparison.options[1].roiPercent).not.toBeNull();
+ expect(data.comparison.modelLimitations.join(' ')).toMatch(/физическ|энерг/);
+});
+test('JaamSim fails closed if professional backend is unavailable',async({page})=>{
+ await prepareTransport(page);
+ await page.getByRole('navigation',{name:'Этапы проекта'}).getByRole('button',{name:/Сценарии JaamSim/}).click();
+ await page.route('**/api/v1/ris/compare',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'JaamSim не установлен'})}));
+ await page.getByRole('button',{name:/Сравнить процесс и инвестиции/}).click();
+ await expect(page.getByRole('alert')).toContainText('JaamSim не установлен');
+ await expect(page.getByRole('heading',{name:/JaamSim 2026-05/})).toHaveCount(0);
 });

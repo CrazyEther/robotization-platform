@@ -29,3 +29,8 @@ docs/plans.md
 docs/prompt.md
 docs/release-status.md
 scripts/checkpoint.py
+vendor/jaamsim/*.jar
+vendor/jaamsim/*.cfg
+vendor/jaamsim/*.dat
+vendor/jaamsim/*.rep
+/-help.log
