@@ -85,9 +85,9 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
-          distribution: temurin
+          distribution: oracle
           java-version: '27'
       - run: python -m pip install -r services/simulation/requirements.txt
       - run: python scripts/install_jaamsim.py
