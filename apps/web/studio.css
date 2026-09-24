@@ -33,3 +33,6 @@
 .ris-comparison-table td:first-child,.ris-comparison-table th:first-child{min-width:180px;white-space:normal;position:sticky;left:0;background:#fafafa}
 .ris-comparison-table thead th:first-child{background:#e9eff3}
 @media(max-width:580px){.ris-three-fields{grid-template-columns:1fr}.ris-compare .ris-work-card{padding:17px}}
+
+.ris-preview-banner{position:relative;z-index:20;background:#fcddc7;color:#41210f;border-bottom:1px solid #e6a574;padding:13px 24px;text-align:center;font-size:12px;font-weight:750;letter-spacing:.015em;line-height:1.6}
+@media(max-width:580px){.ris-preview-banner{padding:10px 14px;font-size:11px}}

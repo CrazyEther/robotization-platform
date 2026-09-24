@@ -57,3 +57,23 @@ jobs:
           curl --fail --silent http://127.0.0.1:8890/api/v1/health
           curl --fail --silent http://127.0.0.1:8900/health
           npm run test:e2e
+      - run: npm run build:preview
+      - name: Verify public preview access boundaries and browser workflow
+        env:
+          PORT: '8978'
+          PUBLIC_PREVIEW_MODE: 'true'
+          PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8978'
+          RIS_PREVIEW_TEST: 'true'
+        run: |
+          set -euo pipefail
+          npm start > /tmp/ris-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "${PREVIEW_PID}" 2>/dev/null || true; cat /tmp/ris-preview.log' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:8978/api/v1/config | grep -q '"publicPreview":true'; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8978/api/v1/config | grep -q '"publicPreview":true'
+          npx playwright test tests/e2e/preview.spec.ts --reporter=list

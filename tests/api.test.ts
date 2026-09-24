@@ -3,6 +3,26 @@ import app from '../apps/api/app';
 import {createScenario} from '../packages/ris/contracts';
 const post=(path:string,body:unknown)=>app.request(`/api/v1/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 describe('public API rejects insufficient inputs and unsafe access',()=>{
+ it('preview static pages are not indexed as a production product',async()=>{
+  const response=await app.request('/',{},{PUBLIC_PREVIEW_MODE:'true',ASSETS:{fetch:async()=>new Response('<h1>Preview</h1>',{headers:{'content-type':'text/html'}})}});
+  expect(response.status).toBe(200);
+  expect(response.headers.get('x-robots-tag')).toMatch(/noindex/);
+ });
+ it('preview exposes only informational GET endpoints and blocks compute, account and write APIs',async()=>{
+  const env={PUBLIC_PREVIEW_MODE:'true'};
+  for(const path of ['/api/v1/health','/api/v1/config','/api/v1/catalog']){
+   const response=await app.request(path,{},env);expect(response.status).toBe(200);
+   expect(response.headers.get('cache-control')).toBe('no-store');
+  }
+  const config=await app.request('/api/v1/config',{},env);
+  expect((await config.json()).publicPreview).toBe(true);
+  for(const [path,method] of [['/api/v1/ris/experiment','POST'],['/api/v1/ris/compare','POST'],['/api/v1/economics','POST'],['/api/v1/organizations','GET'],['/api/v1/organizations','POST'],['/api/v1/diagnose','POST'],['/api/v1/knowledge-graph','GET']]){
+   const response=await app.request(path,{method},env);expect(response.status,path).toBe(503);
+   expect((await response.json()).code).toBe('PREVIEW_READ_ONLY');
+  }
+  const response=await app.request('/api/v1/catalog',{method:'POST'},env);
+  expect(response.status).toBe(503);
+ });
  it('reports live health without claiming economic readiness',async()=>{const response=await app.request('/api/v1/health');expect(response.status).toBe(200);expect((await response.json()).dataMode).toBe('source-backed-reference-catalog');expect(response.headers.get('x-content-type-options')).toBe('nosniff');});
  it('does not pretend accounts are available without backend configuration',async()=>{const response=await app.request('/api/v1/organizations');expect(response.status).toBe(503);expect((await response.json()).code).toBe('AUTH_NOT_CONFIGURED');});
  it('requires bearer authentication when backend exists',async()=>{const response=await app.request('/api/v1/organizations',{}, {SUPABASE_URL:'https://example.supabase.co',SUPABASE_ANON_KEY:'not-a-credential'});expect(response.status).toBe(401);});
