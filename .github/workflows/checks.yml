@@ -2,6 +2,7 @@ name: Checks
 on: [push, pull_request]
 permissions:
   contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -18,25 +19,10 @@ jobs:
       - run: npm test
       - run: npm run data:verify
       - run: npm run build
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - run: python -m pip install -r services/simulation/requirements.txt
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - run: npm run jaamsim:install
-      - run: npm run sim:test
-      - name: Verify compute container and pinned professional engine
-        run: |
-          docker build -t ris-simulation:ci services/simulation
-          docker run --rm ris-simulation:ci python -c "import app,jaamsim_engine; assert jaamsim_engine.installed_jar().is_file()"
       - run: npx playwright install --with-deps chromium
       - name: Browser checks
         env:
           RIS_WEB_PORT: '8890'
-          RIS_SIM_PORT: '8900'
           PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:8890'
         run: |
           set -euo pipefail
@@ -45,20 +31,18 @@ jobs:
           trap 'kill "${RIS_PID}" 2>/dev/null || true; cat /tmp/ris-services.log' EXIT
           for attempt in $(seq 1 40); do
             if ! kill -0 "${RIS_PID}" 2>/dev/null; then
-              echo "RIS processes terminated during startup"
+              echo "RIS process terminated during startup"
               exit 1
             fi
-            if curl --fail --silent http://127.0.0.1:8890/api/v1/health > /dev/null &&
-               curl --fail --silent http://127.0.0.1:8900/health > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:8890/api/v1/health > /dev/null; then
               break
             fi
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:8890/api/v1/health
-          curl --fail --silent http://127.0.0.1:8900/health
           npm run test:e2e
       - run: npm run build:preview
-      - name: Verify public preview access boundaries and browser workflow
+      - name: Verify public preview access boundaries and browser twin
         env:
           PORT: '8978'
           PUBLIC_PREVIEW_MODE: 'true'
@@ -77,26 +61,3 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:8978/api/v1/config | grep -q '"publicPreview":true'
           npx playwright test tests/e2e/preview.spec.ts --reporter=list
-  jaamsim-windows-java27:
-    runs-on: windows-latest
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-      - uses: actions/setup-java@v6
-        with:
-          distribution: oracle
-          java-version: '27'
-      - run: python -m pip install -r services/simulation/requirements.txt
-      - run: python scripts/install_jaamsim.py
-      - name: Check JaamSim process model on Windows Java 27
-        shell: pwsh
-        run: |
-          java --version
-          python -m unittest discover -s services/simulation -p test_jaamsim.py -v
-          if ($LASTEXITCODE -ne 0) {
-            python scripts/diagnose_jaamsim.py
-            exit 1
-          }

@@ -16,7 +16,7 @@ describe('public API rejects insufficient inputs and unsafe access',()=>{
   }
   const config=await app.request('/api/v1/config',{},env);
   expect((await config.json()).publicPreview).toBe(true);
-  for(const [path,method] of [['/api/v1/ris/experiment','POST'],['/api/v1/ris/compare','POST'],['/api/v1/economics','POST'],['/api/v1/organizations','GET'],['/api/v1/organizations','POST'],['/api/v1/diagnose','POST'],['/api/v1/knowledge-graph','GET']]){
+  for(const [path,method] of [['/api/v1/ris/cloud/run','POST'],['/api/v1/economics','POST'],['/api/v1/organizations','GET'],['/api/v1/organizations','POST'],['/api/v1/diagnose','POST'],['/api/v1/knowledge-graph','GET']]){
    const response=await app.request(path,{method},env);expect(response.status,path).toBe(503);
    expect((await response.json()).code).toBe('PREVIEW_READ_ONLY');
   }
@@ -34,14 +34,31 @@ describe('public API rejects insufficient inputs and unsafe access',()=>{
  it('rejects cross-origin writes',async()=>{const response=await app.request('/api/v1/economics',{method:'POST',headers:{Origin:'https://attacker.example','Content-Type':'application/json'},body:'{}'});expect(response.status).toBe(403);});
  it('limits oversized payloads',async()=>{const response=await app.request('/api/v1/economics',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input:'x'.repeat(2*1024*1024)})});expect(response.status).toBe(413);});
  it('exposes sixteen process templates',async()=>{const response=await app.request('/api/v1/process-templates');expect((await response.json()).families).toHaveLength(16);});
- it('validates replicated experiment requests before contacting compute service',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:0})});expect(response.status).toBe(422);});
- it('validates and gates JaamSim baseline-vs-robot financial comparisons',async()=>{
- const scenario=createScenario('warehouse');
- const finance={baselineWorkers:2,baselineTaskSeconds:180,baselineAnnualCostRub:2400000,residualHumanCostAnnualRub:300000,robotUnitPriceRub:1000000,installationRub:100000,infrastructureRub:100000,chargersRub:50000,annualMaintenanceRub:100000,electricityRubPerKwh:8,workdaysPerYear:250,horizonYears:5,discountRatePercent:12,annualRequiredJobs:12000,marginRubPerAdditionalJob:100};
- const send=async(robotCounts:number[],financeOverrides:Record<string,number>={})=>app.request('/api/v1/ris/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario,finance:{...finance,...financeOverrides},robotCounts})});
- expect((await send([1,1])).status).toBe(422);
- expect((await send([2],{annualRequiredJobs:10000000})).status).toBe(422);
- const response=await send([1,2,4]);expect(response.status).toBe(503);expect((await response.json()).code).toBe('JAAMSIM_UNAVAILABLE');
+});
+
+describe('AnyLogic Cloud local-only compute boundary',()=>{
+ const env={ANYLOGIC_API_KEY:'secret-key-that-must-never-leak',ANYLOGIC_MODEL_ID:'model-1',ANYLOGIC_VERSION_ID:'version-1',ANYLOGIC_WORKSPACE_TOKEN:'local-strong-password'};
+ it('fails closed without configured Cloud credentials',async()=>{
+  const res=await app.request('/api/v1/ris/cloud/status',{});
+  expect(res.status).toBe(200);
+  const body=await res.json() as Record<string,unknown>;
+  expect(body.configured).toBe(false);
+  expect(JSON.stringify(body)).not.toContain('secret-key');
+  const run=await app.request('/api/v1/ris/cloud/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({scenario:createScenario('hospital'),robotId:'mir-250'})});
+  expect(run.status).toBe(503);
  });
- it('fails closed when replicated experiment compute service is unavailable',async()=>{const response=await app.request('/api/v1/ris/experiment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:createScenario('warehouse'),replications:5})});expect(response.status).toBe(503);expect((await response.json()).code).toBe('SIM_ENGINE_UNAVAILABLE');});
+ it('only permits local machine with a workspace token and never returns Cloud key',async()=>{
+  const status=await app.request('/api/v1/ris/cloud/status',{},env);
+  expect(status.status).toBe(200);
+  expect((await status.json() as {configured:boolean}).configured).toBe(true);
+  const missing=await app.request('/api/v1/ris/cloud/inspect',{method:'POST'},env);
+  expect(missing.status).toBe(403);
+  const remote=await app.request('https://ris.example.com/api/v1/ris/cloud/inspect',{method:'POST',headers:{'x-ris-workspace-key':env.ANYLOGIC_WORKSPACE_TOKEN}},env);
+  expect(remote.status).toBe(403);
+ });
+ it('preview blocks even the configured local Cloud connector',async()=>{
+  const res=await app.request('/api/v1/ris/cloud/run',{method:'POST',headers:{'x-ris-workspace-key':env.ANYLOGIC_WORKSPACE_TOKEN}}, {...env,PUBLIC_PREVIEW_MODE:'true'});
+  expect(res.status).toBe(503);
+  expect((await res.json() as {code:string}).code).toBe('PREVIEW_READ_ONLY');
+ });
 });

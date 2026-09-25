@@ -1,35 +1,41 @@
-# Review: Robot Investment Studio — scope and release gates
+# Review: Robot Investment Studio — Digital Twin migration
 
-Дата ревью: 24 сентября 2026 г. Рабочая ветка `feat/ris-unified-experience`; новый модуль JaamSim проверен локально; CI нового коммита проверяется отдельно перед слиянием.
+Review date: 25 September 2026. Working branch: `feat/anylogic-scene-workspace`.
 
-## Что устранено по замечанию заказчика
+## Current product state
 
-Новая точка входа `apps/web/main.tsx → Studio.tsx` больше не загружает старый App или предыдущий отдельный Landing. Наследованные React-страницы и прежние E2E-сценарии удалены из рабочей ветки. От открытия сайта до отчёта работает один связанный интерфейс; проект, планировка, выбор робота, результаты вычислений и финансовые допущения находятся в одной модели состояния.
+The previous SimPy/JaamSim execution path has been removed from the active product and repository. The primary user path is now:
 
-## Матрица требований
+**object → equipment → editable Digital Twin Studio → execution/replay → baseline comparison → economics**
 
-| Требование | Проверенное состояние | Release gate |
+### Verified implementation
+
+| Area | Current implementation | Remaining release gate |
 |---|---|---|
-| Новый дизайн на всех экранах | Единый React-интерфейс: объект, маркетплейс, планировка, SimPy, сравнение JaamSim, финансы, отчёт; E2E desktop/mobile | Визуальный аудит, сценарии ошибок и доступность |
-| Подбор отрасли | 4 демонстрационных шаблона одной транспортной операции | Реальные отраслевые технологические процессы отдельно |
-| Реальное помещение | Редактируемый 2D-граф по клеткам 1 м, препятствия и две станции | Импорт PDF/CAD/BIM, фактические планы, точная геометрия, этажность |
-| Симуляция уровня AnyLogic | **Не выполнено**. SimPy — транспортная DES с зарядкой; **реальный JaamSim 2026-05** — независимое сравнение baseline/парк роботов и +25% потока, очереди/ресурсы; не моделирует физику движения | Gazebo/Open-RMF с реальными моделями, этажами, трафиком и кинематикой; отраслевые калибровки и независимая валидация |
-| Каталог большого числа реальных роботов | 44 структурированных справочных записи, лишь часть характеристик; источник указан | Полное наполнение, права на данные, версии ТТХ, комплектации, цены и модели |
-| Воспроизводимость расчетов | Версия движка, seed, SHA256 входов, до 100 репликаций, приближённые ДИ оценки среднего и экспорт каждого прогона; unit/E2E проверки | Калибровка на фактических данных, распределения спроса/сбоев и интервалы прогноза SLA на смену |
-| CAPEX, OPEX, ROI, NPV, TCO | Сравнение JaamSim: базовый процесс/1–4 варианта парка/пик +25%, реальные выполненные задания, CAPEX по парку, OPEX с обслуживанием каждого робота, годовой эффект, TCO, ROI, NPV, окупаемость; затраты и маржа — ввод пользователя, энергия оценочная | Валидация исходных денежных потоков; налоги, монтаж/простой, лизинг/RaaS, надёжность, дискретизация cash-flow, физические KPI, интервалы финансового риска |
-| AnyLogic для привилегированных пользователей | Не подключён и не активирован | Отдельные договорные права, интеграция и серверная авторизация |
-| Cloudflare production | Frontend/API совместимы по структуре, Docker backend включает Python, Java 17, хеш-проверенный JaamSim и SimPy; локальный Docker API проверен; опубликован отдельный **публичный ознакомительный Worker read-only**, но полноценного production-развёртывания с вычислениями и авторизацией ещё нет | HTTPS отдельного вычислительного кластера, сервисные секреты, внешнее ограничение частоты, мониторинг, нагрузочное тестирование, лицензии |
-| Подтверждение готовности к коммерческому показу | Есть демонстрационный сквозной сценарий | Калибровка и отраслевое инженерное ревью перед представлением результатов как инвестиционного обоснования |
+| Facility input | PNG/JPG/WebP underlay; schema-validated JSON geometry; PDF/CAD accepted only as source attachment | vector PDF/DXF/DWG import, scale calibration workflow, BIM |
+| 2D editor | walls, racks, doors, chargers, stations, elevators, A/B process zones; drag/select/remove | richer geometry, snapping, multi-floor topology |
+| Robot execution | `grid-agv/1.0`: multi-robot tasks, exclusive route cells, queues, loaded/empty travel, charging | robot footprint, turn radius, multi-route traffic, dynamic doors/elevators |
+| 2D replay | recorded frames from the same run used for KPI | larger-run performance and trace compression |
+| 3D | Three.js geometry + the same robot replay positions | detailed assets/URDF, physics/kinematics |
+| Sectors | warehouse, factory, hospital, airport process presets | validated domain-specific flows and resources |
+| Baseline comparison | same site and task-arrival schedule class | measured site calibration |
+| Finance | CAPEX/OPEX/TCO/ROI/NPV/payback, fail-closed on unmet common demand | quotations, leasing/RaaS, commissioning cash-flow, uncertainty |
+| AnyLogic | fail-closed Cloud/API contract and local development tooling | publish a real RIS model and verify its trajectories/KPI end-to-end |
+| Public preview | browser Digital Twin can execute; server writes/accounts/AnyLogic are blocked | authentication, persistence, tenant isolation and production ops |
 
-## Проверки в текущей ветке
+## Quality evidence
 
-- Node/TypeScript: lint, typecheck, Vite build, 63 модульных теста TypeScript; необходима отдельная проверка GitHub CI после push.
-- SimPy: 12 тестов, включая воспроизводимость серии, статистическое резюме, грузоподъёмность, батарею и непроходимый маршрут.
-- Playwright: 20 сквозных проверок desktop/mobile, включая реальное выполнение JaamSim, сравнение сценариев/пиковой нагрузки, экспорт расчётов, отказ недоступного профессионального backend.
-- JaamSim: 10 тестов, включая реальный пакетный запуск Java, воспроизводимость, сопоставимость baseline, расчёты OPEX, защиту занятого сервиса, альтернативные размеры парка и отказ выводить ROI при недостаточной мощности.
-- Docker: локально построен образ JaamSim+SimPy, endpoint реального сравнения baseline/robot/peak возвращает 200 с модельными результатами.
-- Скриншоты прежних экранов программы: `docs/design/ris-*.png`; новые экраны сравнения требуют обновления скриншотов.
+Current branch must not be considered release-ready until the exact final commit passes:
+- TypeScript typecheck and ESLint;
+- complete Vitest suite;
+- catalog/source verification;
+- production Vite build;
+- desktop and mobile Playwright workflow;
+- public-preview Playwright boundary test;
+- GitHub Actions on the exact pushed commit.
 
-**Текущая ревизия:** `simpy-transport/0.5` различает доставку и возврат, учитывает частичный пробег/энергию, P95 и зарядку; среднее ожидание принятого задания теперь включает время до начала обслуживания, в том числе зарядку робота, но не учитывает задания, до которых робот ещё не дошёл. Поддерживает повторные прогоны, статистику по серии и сохраняет индивидуальные результаты. Финансовый вывод дополнительно проверяет разброс по прогонам. Защита от ответа устаревшей симуляции проверена браузерным тестом; сквозной экспорт проверяет связь технических результатов с экономикой. Эти проверки не являются валидацией по реальному предприятию.
+The Digital Twin unit suite includes an explicit invariant that two robots never share the same reported position in one frame.
 
-**Вердикт:** новая единая оболочка с работающим демонстрационным транспортным расчётом; **production-release исходного полного ТЗ не достигнут**. Нельзя публично заявлять инженерную точность уровня AnyLogic, пригодность каталога для универсального подбора или подтверждённую окупаемость конкретного предприятия.
+## Release position
+
+This is a substantial **working pre-investment Digital Twin**, not a validated industrial digital twin of an arbitrary site. The product may demonstrate and compare scenarios, but must not claim verified AnyLogic/FlexSim fidelity, guaranteed throughput, certified navigation safety or “exact ROI” until the relevant model and site data are independently calibrated.

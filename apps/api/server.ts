@@ -7,7 +7,7 @@ import app from './app';
 if(existsSync('.env'))process.loadEnvFile('.env');
 const server=new Hono();
 server.use('*',secureHeaders({xFrameOptions:'DENY',referrerPolicy:'no-referrer'}));
-server.use('/api/*',async c=>app.fetch(c.req.raw,{SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY,GOOGLE_OAUTH_ENABLED:process.env.GOOGLE_OAUTH_ENABLED,SIMULATION_ENGINE_URL:process.env.SIMULATION_ENGINE_URL,SIMULATION_SERVICE_KEY:process.env.SIMULATION_SERVICE_KEY,PUBLIC_PREVIEW_MODE:process.env.PUBLIC_PREVIEW_MODE}));
+server.use('/api/*',async c=>app.fetch(c.req.raw,{SUPABASE_URL:process.env.SUPABASE_URL,SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY,GOOGLE_OAUTH_ENABLED:process.env.GOOGLE_OAUTH_ENABLED,PUBLIC_PREVIEW_MODE:process.env.PUBLIC_PREVIEW_MODE,ANYLOGIC_API_KEY:process.env.ANYLOGIC_API_KEY,ANYLOGIC_MODEL_ID:process.env.ANYLOGIC_MODEL_ID,ANYLOGIC_VERSION_ID:process.env.ANYLOGIC_VERSION_ID,ANYLOGIC_CLOUD_ORIGIN:process.env.ANYLOGIC_CLOUD_ORIGIN,ANYLOGIC_WORKSPACE_TOKEN:process.env.ANYLOGIC_WORKSPACE_TOKEN}));
 server.use('*',serveStatic({root:'./dist'}));
 server.get('*',serveStatic({path:'./dist/index.html'}));
 serve({fetch:server.fetch,hostname:'127.0.0.1',port:Number(process.env.PORT??8787)});

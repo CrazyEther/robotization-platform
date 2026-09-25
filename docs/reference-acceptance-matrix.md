@@ -1,37 +1,28 @@
-# RIS — требования к промышленной готовности и проверяемые ограничения
+# RIS — acceptance matrix after Digital Twin migration
 
-Основание: исследовательский файл пользователя «новый aanalyze_robotic_market.txt» (разделы 6.1, 6.8, 7, 9) и ТЗ проекта. Исследование определяет целевые сценарии; наличие примеров других продуктов **не подтверждает** реализацию этих функций в RIS. Фактическая версия: ветка `feat/ris-unified-experience`. Матрица не является актом приёмки.
+This matrix describes the current implementation, not marketing promises.
 
-## Принцип оценки
-
-Статус «проверено» ставится только при наличии теста/измерения именно этой функции. Успешная сборка, красивая анимация и публикация в интернете не подтверждают точность симуляции или окупаемости. При изменении модели результаты прежнего эксперимента должны немедленно становиться недействительными.
-
-| Область из исследования / ТЗ | Реализация сейчас | Недостающий критерий приемки |
+| Requirement | Implemented now | Remaining evidence / work |
 |---|---|---|
-| Единый путь: объект → робот → планировка → эксперимент → экономика → отчёт | Один React Studio: отдельный маркетплейс, SimPy, новая секция профессионального JaamSim сравнения baseline/вариант/пик; 20 сквозных desktop/mobile E2E | Проверка всех сценариев ввода, доступность, сохранение/открытие проектов |
-| Быстрая параметрическая оценка | Параметры задаются вручную, отдельной калиброванной параметрической модели нет | Проверяемая экспресс-модель с источниками допущений, измерением времени ответа и погрешности |
-| Дискретно-событийная модель | SimPy: транспорт/зарядка/репликации; JaamSim 2026-05: реальный Java DES с генератором, очередью, ресурсом, seize/release и отдельными экспериментами для базового процесса, 1–4 вариантов парка и пика +25% | Производственные станции/буферы/отказы/смены по отраслям; повторные JaamSim-репликации стохастических сценариев; валидация по фактическим данным |
-| Пространственная модель конкретного объекта | Кратчайший путь по двум точкам на сетке 1 м, статические прямоугольники | Реальная геометрия CAD/BIM/PDF, геометрия и габариты робота, пересечения маршрутов, многoэтажность |
-| Моделирование уровня AnyLogic / сопоставимое | НЕ ДОСТИГНУТО; встроенная библиотека AnyLogic отсутствует | Легальная интеграция готовых отраслевых моделей или открытых движков; независимая инженерная валидация |
-| Производство, склад, медицина, аэропорт | 4 демонстрационных шаблона **одной** транспортной операции, только один уровень | Отдельная предметная модель процессов, инфраструктуры, персонала и ограничений каждой отрасли |
-| Физическая мобильная роботизация | Нет симуляции физики/движущихся препятствий | Open-RMF/Gazebo или эквивалент, лифты/двери/люди/приоритеты заданий, проверка габаритной проходимости |
-| Роботизированные ячейки | Каталог может показывать промышленных роботов, но SimPy-подбор их не поддерживает | Кинематика, досягаемость, цикл, оснастка, безопасность, специализированный движок |
-| Каталог роботизированных решений | 44 справочные позиции; часть характеристик и цен не подтверждена | Нормализовать 223 строки исходного CSV до уникальных моделей и применений, восстановить проверяемые ТТХ и источники |
-| Автоматический подбор парка | В JaamSim пользователь задаёт до 4 размеров парка, каждый действительно моделируется и сравнивается с baseline; автоматической оптимизации пока нет | Автоперебор с ограничениями SLA, габаритов, зарядки, капитальных затрат и статистической надёжности |
-| Технические KPI | Выполнение заданий, очередь, загрузка, энергия, P95, среднее время, холостой/гружёный пробег и зарядка | SLA-выполнение, загрузка отдельных рабочих постов, пики, доверительные интервалы, причинный анализ узких мест |
-| Репрезентативность результатов | SimPy: seed, hash входов, несколько стохастических прогонов и приближённые интервалы оценки среднего. JaamSim: реальный отчёт и воспроизводимый seed, но пока по одному прогону на конфигурацию | Репликации JaamSim, интервальные оценки качества при разных потоках/сбоях, сравнение с наблюдениями реальных внедрений |
-| Финансовый расчёт | Дополнительно к SimPy реализовано прямое сравнение JaamSim baseline/robot/пик, CAPEX по парку, OPEX с обслуживанием каждого робота, ROI/NPV/TCO из выполненных заданий и введённых денежных параметров; энергия JaamSim — оценка. Для одиночного случайного потока ROI/NPV заблокированы | Калибровка денежной базы и фактического сбыта, независимые серии испытаний, график денежных потоков, налоги, RaaS/лизинг |
-| Правдоподобие цены и эксплуатации | Ручные финансовые поля; каталог не даёт подтверждённую смету комплекта | Цена робота+оснастка+монтаж+инфраструктура+сервис с источниками, версиями и датами; без данных ROI не представлять как точный |
-| Доступ к AnyLogic | Не подключён и не активирован | Верифицировать коммерческие права; серверная авторизация привилегий; включение публично только после лицензии |
-| Cloudflare production | Worker/сайт + отдельный Python/Java Docker: локально выполнен JaamSim контейнер и сравнительный API. Ограничен один одновременный расчёт JaamSim на инстанс; публичного развёртывания нет | HTTPS вычислительного сервиса, внешний rate limit, мониторинг, нагрузочные тесты, отдельный deployment и физический движок |
-| Публичная защита предприятия | Нет доказанной оценки безопасности пользовательских планировок | Авторизация/изоляция проектов, проверка загрузок, ограничения вычислительных ресурсов, журнал безопасности |
-| Предъявление индустрии | Рабочий исследовательский прототип, не подтверждённый инженерный продукт | Отраслевые контрольные стенды, протокол расхождений с фактом, экспертная проверка финансовых результатов |
+| One coherent workflow | object → robot → Digital Twin → replay → baseline comparison → economics/export | persistence and authenticated project lifecycle |
+| User facility plan | image underlay + JSON geometry | automatic PDF/DXF/DWG/BIM extraction and scale calibration |
+| Editable 2D facility | blocking walls/racks; door/charger/station/elevator objects; A/B zones | richer geometry, multi-floor and semantic topology |
+| Actual robot visualization | robot positions recorded by the same execution that generates KPI | calibrated footprint, turning dynamics and sensor/safety zones |
+| Multiple robots | task dispatch, exclusive internal cells, traffic waits | multi-route planner, intersection reservations and fleet interoperability |
+| Charging | battery depletion, charger-channel contention; charger capacity from scene | physical charger placement/reachability and battery calibration |
+| Warehouse | pallet-delivery preset | site-specific resources/process validation |
+| Hospital | medication-delivery preset | elevators, automatic doors, people, sterile/restricted zones |
+| Airport | baggage-transfer preset | conveyors, security zones, multiple baggage processes |
+| Factory | inter-operation delivery preset | machine handshakes, buffers, failures and production calendars |
+| Baseline vs automation | same geometry and workload class; separate execution | baseline calibration from measured operational data |
+| KPI | completed/backlog, throughput, queue, job time/P95, utilization, energy, traffic wait, distances | confidence intervals/replications and field error bounds |
+| 2D replay | full trajectory-frame replay | trace compression and very large scenarios |
+| 3D | Three.js view using same geometry and robot positions | detailed robot assets, physics and collision geometry |
+| CAPEX/OPEX/TCO/ROI/NPV | linked to baseline/robot outputs; blocked when common annual plan is not met | quotations, taxes/financing, commissioning schedule, uncertainty |
+| AnyLogic integration | versioned, fail-closed REST contract and local PLE/MCP development setup | actual published RIS model; end-to-end live execution proof |
+| Extensibility | sector process presets separated from core engine | plug-in scenario/resources schema rather than code-only extension |
+| Public preview | local browser twin works; protected server APIs blocked | auth, DB persistence, tenant security, production monitoring |
 
-## Свидетельства на текущем коде
+## Non-negotiable interpretation
 
-- Отдельный случай «доставка завершена до окончания обратного хода» тестируется с проверкой частичного пробега и энергии; до исправления он давал ноль доставок и ноль затрат.
-- Поздний ответ старого эксперимента не должен возвращать ROI после изменения параметров; проверяется управляемой задержкой ответа в Playwright.
-- Экспорт JSON проверяется содержательно: движок, хеш входов, P95, объём выполненных заданий и перенос энергии/объёма в инвестиционный модуль.
-- Реальные модели оборудования, права на датасеты, точность симуляции по фактическим внедрениям и готовность Cloudflare к публичной эксплуатации пока **не подтверждены**.
-
-**Правило релиза:** никакого статуса production-release, публичного «точного ROI» и объединения PR в основную ветку до закрытия соответствующих технических, финансовых, лицензионных и эксплуатационных критериев.
+A successful browser run proves only that the implemented model executed consistently for the supplied assumptions. It does not prove real-site throughput, safety, vendor compatibility or financial return. Those claims require calibration and independent engineering/financial evidence.

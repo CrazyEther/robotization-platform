@@ -1,43 +1,46 @@
-# Install the educational AnyLogic PLE MCP in an isolated, ignored virtualenv.
-# It generates Source/Queue/Delay/Sink .alp models only, NOT robot-navigation simulations.
 $ErrorActionPreference = 'Stop'
-$root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$tool = Join-Path $root '.tools\anylogicPLE-mcp'
-$venv = Join-Path $root '.tools\anylogic-mcp-venv'
-$exe = Join-Path $venv 'Scripts\anylogic-mcp.exe'
-$py = Join-Path $venv 'Scripts\python.exe'
-$models = Join-Path $root '.tools\anylogic-ple-models'
-$revision = '2464973134c10cb5abbc6ff22dbf96bbab0dd99e'
-New-Item -Force -ItemType Directory (Join-Path $root '.tools') | Out-Null
-if (-not (Test-Path $tool)) {
-  git clone https://github.com/umbaman/anylogicPLE-mcp.git $tool
-  if ($LASTEXITCODE -ne 0) { throw 'MCP clone failed' }
+$root = Split-Path -Parent $PSScriptRoot
+$tools = Join-Path $root '.tools'
+$source = Join-Path $tools 'anylogicPLE-mcp'
+$venv = Join-Path $tools 'anylogic-mcp-venv'
+$output = Join-Path $tools 'anylogic-ple-models'
+$repo = 'https://github.com/umbaman/anylogicPLE-mcp.git'
+$commit = '2464973134c10cb5abbc6ff22dbf96bbab0dd99e'
+
+New-Item -ItemType Directory -Force -Path $tools,$output | Out-Null
+if (-not (Test-Path (Join-Path $source '.git'))) {
+  git clone $repo $source
 }
-$actual = (git -C $tool rev-parse HEAD).Trim()
-if ($actual -ne $revision) {
-  git -C $tool cat-file -e "$revision^{commit}"
-  if ($LASTEXITCODE -ne 0) { git -C $tool fetch origin $revision }
-  if ($LASTEXITCODE -ne 0) { throw 'Cannot verify pinned MCP revision' }
-  if ((git -C $tool status --porcelain).Length -ne 0) { throw 'MCP source has local changes; cannot switch revisions safely' }
-  git -C $tool checkout --detach $revision
-  if ($LASTEXITCODE -ne 0) { throw 'Cannot use pinned MCP revision' }
+git -C $source fetch --depth 1 origin $commit
+git -C $source checkout --detach $commit
+
+$pythonCandidates = @('C:\Python312\python.exe','py')
+$python = $null
+foreach ($candidate in $pythonCandidates) {
+  try {
+    if ($candidate -eq 'py') { & py -3.12 --version *> $null; if ($LASTEXITCODE -eq 0) { $python = 'py -3.12'; break } }
+    elseif (Test-Path $candidate) { $python = $candidate; break }
+  } catch {}
 }
-if (-not (Test-Path $py)) {
-  python -m venv $venv
-  if ($LASTEXITCODE -ne 0) { throw 'Python 3.10+ is required to set up the isolated MCP environment' }
+if (-not $python) { throw 'Python 3.12 is required for the isolated AnyLogic MCP environment.' }
+
+if (-not (Test-Path (Join-Path $venv 'Scripts\python.exe'))) {
+  if ($python -eq 'py -3.12') { & py -3.12 -m venv $venv } else { & $python -m venv $venv }
 }
-& $py -m pip install --disable-pip-version-check --no-input -e $tool 'mcp==1.30.0' 'pytest>=7,<10'
-if ($LASTEXITCODE -ne 0) { throw 'MCP dependencies failed to install' }
-& $py -m pytest (Join-Path $tool 'tests') -q
-if ($LASTEXITCODE -ne 0) { throw 'Third-party MCP tests failed' }
-New-Item -Force -ItemType Directory $models | Out-Null
-$config = Join-Path $root '.mcp.json'
-if (-not (Test-Path $config)) {
-  $json = @{mcpServers=@{anylogic=@{command=$exe;args=@();env=@{ALP_OUTPUT_DIR=$models}}}} | ConvertTo-Json -Depth 8
-  [System.IO.File]::WriteAllText($config, $json, [System.Text.UTF8Encoding]::new($false))
-  Write-Output ('Created local MCP config: '+$config)
-} else {
-  Write-Output ('Existing MCP config preserved: '+$config)
+$venvPython = Join-Path $venv 'Scripts\python.exe'
+& $venvPython -m pip install --disable-pip-version-check --no-input -e $source 'mcp>=1.10,<2' 'pytest>=7,<10'
+& $venvPython -m pytest (Join-Path $source 'tests') -q
+
+$mcpConfig = @{
+  mcpServers = @{
+    anylogic_ple = @{
+      command = (Join-Path $venv 'Scripts\anylogic-mcp.exe')
+      args = @()
+      env = @{ ALP_OUTPUT_DIR = $output }
+    }
+  }
 }
-Write-Output ('AnyLogic PLE MCP executable: '+$exe)
-Write-Output 'Reload the supported coding host to register this local MCP. It is NOT auto-connected to ChatGPT.'
+$mcpConfig | ConvertTo-Json -Depth 6 | Set-Content -Path (Join-Path $root '.mcp.json') -Encoding UTF8
+Write-Output ('ANYLOGIC_MCP_READY ' + (Join-Path $venv 'Scripts\anylogic-mcp.exe'))
+Write-Output ('MCP_CONFIG ' + (Join-Path $root '.mcp.json'))
+Write-Output ('ALP_OUTPUT_DIR ' + $output)

@@ -1,18 +1,33 @@
-# Cloudflare: публичный предпросмотр Robot Investment Studio
+# Cloudflare public preview
 
-## Адрес и назначение
+Preview URL: https://ris-public-preview.battle-walleye.workers.dev
 
-Ознакомительная версия: https://ris-public-preview.battle-walleye.workers.dev
+The preview Worker is isolated from the production-name Worker and uses `PUBLIC_PREVIEW_MODE=true`.
 
-Worker `ris-public-preview` опубликован отдельно от ранее существующего `robotization-platform` в авторизованном Cloudflare-аккаунте. Это **не production-релиз полного ТЗ** и не проверенный многопользовательский сервис.
+## What is available
 
-## Строгая граница режима предпросмотра
+The RIS Digital Twin runtime is browser-side JavaScript, so a visitor can:
+- choose an object and transport robot;
+- edit a facility scene;
+- execute the local Digital Twin;
+- replay the computed trajectories in 2D/3D;
+- compare baseline vs robot and experiment with financial inputs.
 
-`wrangler.preview.jsonc` задаёт `PUBLIC_PREVIEW_MODE=true` на стороне Worker. В этом режиме доступны **только GET** `/api/v1/health`, `/api/v1/config`, `/api/v1/catalog`; все остальные пути `/api/*`, включая создание проектов, авторизацию, симуляцию, сравнение и финансовые расчёты, возвращают HTTP 503 и `PREVIEW_READ_ONLY`. Статические файлы сайта и модели доступны для просмотра. На главной и рабочих экранах показывается заметное предупреждение; кнопка запуска модели отключена.
+This browser computation is not a Cloudflare compute backend and does not consume a secret simulation service.
 
-В браузерной сборке отдельно устанавливается `VITE_PUBLIC_PREVIEW=true`. Это **пользовательское предупреждение**, не механизм защиты: сервер обязан самостоятельно проверять `PUBLIC_PREVIEW_MODE`. Секреты Supabase, ключи вычислительного сервиса и токены Cloudflare в этот Worker не передаются. Отключение серверного флага ради работы полного интерфейса запрещено до настройки безопасности и вычислительных сервисов.
+## What remains server-blocked
 
-## Сборка, проверка и публикация
+Preview middleware permits only safe informational GET endpoints (`health`, `config`, `catalog`). All server-side writes and protected services return `503 PREVIEW_READ_ONLY`, including:
+- organizations/accounts/project persistence;
+- imports and mutations;
+- AnyLogic inspect/run;
+- other protected server calculations.
+
+No AnyLogic API key, Supabase secret or other private credential is bundled into the preview.
+
+Static preview responses carry `X-Robots-Tag: noindex, nofollow, noarchive`.
+
+## Verification
 
 ```bash
 npm ci
@@ -23,31 +38,22 @@ npm run data:verify
 npm run build:preview
 ```
 
-Локальный предпросмотр Windows (PowerShell), в отдельном окне:
+Local preview:
+
 ```powershell
 $env:PUBLIC_PREVIEW_MODE="true"
 $env:PORT="8978"
 npm start
 ```
 
-Во втором окне:
+Then:
+
 ```powershell
 $env:RIS_PREVIEW_TEST="true"
 $env:PLAYWRIGHT_BASE_URL="http://127.0.0.1:8978"
 npx playwright test tests/e2e/preview.spec.ts
 ```
 
-Для авторизованной публикации в правильном Cloudflare-аккаунте:
-```powershell
-$env:CLOUDFLARE_ACCOUNT_ID="<ID вашего аккаунта>"
-npm run deploy:preview
-```
+## Production gaps
 
-Сначала проходятся все проверки и review; затем публикуется только `wrangler.preview.jsonc`. `wrangler.jsonc` и production Worker не заменяются. После публикации обязательны smoke-тесты публичного адреса и проверка, что вычислительные и пользовательские API закрыты.
-
-## Что нужно до полноценного выпуска
-
-1. Запущенная управляемая БД с миграциями, бэкапами, подтверждённой RLS и проверкой доступа к чужому проекту. Сейчас SQL-схема Supabase лежит в репозитории, но работающей подключённой базы в окружении публикации нет.
-2. Подключение удостоверенного провайдера входа; гостевые/пользовательские/административные роли и их серверные проверки. В существующей SQL-схеме есть роли внутри организации (`owner/editor/viewer`), **нет готового платформенного администратора**. Нельзя считать их эквивалентами.
-3. Отдельный защищённый вычислительный сервис Python/Java для SimPy/JaamSim, лимиты на задания, очередь, идентификация пользователя, секреты, отказ при отсутствии движка, репликации и ресурсное тестирование. Cloudflare Workers Free имеет недостаточный лимит CPU для запуска текущего профессионального вычислительного стека на каждом запросе.
-4. Контроль версий моделей, сопоставимые baseline/robot сценарии, валидация на реальных данных, контроль прав на данные каталога и эксплуатационный мониторинг. Тесты интерфейса сами по себе не доказывают точность инвестиционного расчёта.
+The public preview is not a multi-user production service. Production still requires authenticated users/roles, persistent projects, verified RLS, backups, rate/abuse controls, monitoring, and a separately licensed/secured professional simulator if AnyLogic execution is offered.
