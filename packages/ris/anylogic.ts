@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {simulationSchema,type Sector,type SimulationInput} from './contracts';
+import {simulationSchema,type Layout,type Sector,type SimulationInput} from './contracts';
 
 const finite=z.number().finite();
 export const processPresets:Record<Sector,{task:string;pickup:string;dropoff:string}>={
@@ -15,20 +15,34 @@ export const anyLogicSceneObjectSchema=z.object({
  blocking:z.boolean(),label:z.string().min(1).max(200),capacity:z.number().int().min(1).max(1000)
 }).strict();
 export type AnyLogicSceneObject=z.infer<typeof anyLogicSceneObjectSchema>;
+export const anyLogicSiteSchema=z.object({
+ sourceType:z.enum(['template','manual','json','image','pdf','cad']),sourceName:z.string().max(255).nullable(),
+ geometryStatus:z.enum(['template','reference','validated','traced']),dimensionsConfirmed:z.boolean(),siteSpecific:z.boolean()
+}).strict().superRefine((value,ctx)=>{
+ const executable=value.geometryStatus==='validated'||value.geometryStatus==='traced';
+ if(value.siteSpecific&&(!value.dimensionsConfirmed||!executable))ctx.addIssue({code:'custom',message:'Site-specific geometry must be calibrated and executable'});
+ if(value.sourceType==='template'&&value.siteSpecific)ctx.addIssue({code:'custom',message:'Template geometry cannot be site-specific'});
+});
+export type AnyLogicSite=z.infer<typeof anyLogicSiteSchema>;
+export function fitSceneObjectToLayout(object:AnyLogicSceneObject,layout:Layout,patch:Partial<Pick<AnyLogicSceneObject,'x'|'y'|'w'|'h'>>):AnyLogicSceneObject{
+ const w=Math.min(layout.width,Math.max(.1,Number(patch.w??object.w))),h=Math.min(layout.height,Math.max(.1,Number(patch.h??object.h)));
+ const x=Math.min(Math.max(0,Number(patch.x??object.x)),Math.max(0,layout.width-w)),y=Math.min(Math.max(0,Number(patch.y??object.y)),Math.max(0,layout.height-h));
+ return anyLogicSceneObjectSchema.parse({...object,...patch,x,y,w,h});
+}
 
 const baselineSchema=z.object({workers:z.number().int().min(1).max(1000),speedMps:finite.positive().max(10),serviceSeconds:finite.min(0).max(86400)}).strict();
 const anyLogicInputSchema=z.object({
  sector:z.enum(['warehouse','factory','hospital','airport']),scenario:simulationSchema,robotId:z.string().min(1).max(120),
- objects:z.array(anyLogicSceneObjectSchema).max(5000),baseline:baselineSchema,process:z.object({task:z.string(),pickup:z.string(),dropoff:z.string()}).strict()
+ objects:z.array(anyLogicSceneObjectSchema).max(5000),site:anyLogicSiteSchema,baseline:baselineSchema,process:z.object({task:z.string(),pickup:z.string(),dropoff:z.string()}).strict()
 }).strict().superRefine((value,ctx)=>{
  if(value.sector!==value.scenario.sector)ctx.addIssue({code:'custom',message:'Sector and scenario.sector differ'});
  for(const o of value.objects)if(o.x+o.w>value.scenario.layout.width||o.y+o.h>value.scenario.layout.height)ctx.addIssue({code:'custom',message:'Scene object outside room: '+o.id});
 });
 export type AnyLogicInput=z.infer<typeof anyLogicInputSchema>;
-export type AnyLogicPackage={schemaVersion:'ris-anylogic-input/1';inputHash:string;input:AnyLogicInput;requiredOutputs:string[]};
-export function buildAnyLogicPackage({scenario,robotId,objects,baseline}:{scenario:SimulationInput;robotId:string;objects:AnyLogicSceneObject[];baseline:z.infer<typeof baselineSchema>}):AnyLogicPackage{
- const input=anyLogicInputSchema.parse({sector:scenario.sector,scenario,robotId,objects,baseline,process:processPresets[scenario.sector]});
- return {schemaVersion:'ris-anylogic-input/1',inputHash:fingerprint(input),input,requiredOutputs:['inputHash','baseline.kpis','robot.kpis','robot.frames[]','engineVersion','modelVersion','runIds']};
+export type AnyLogicPackage={schemaVersion:'ris-anylogic-input/2';inputHash:string;input:AnyLogicInput;requiredOutputs:string[]};
+export function buildAnyLogicPackage({scenario,robotId,objects,baseline,site}:{scenario:SimulationInput;robotId:string;objects:AnyLogicSceneObject[];baseline:z.infer<typeof baselineSchema>;site:AnyLogicSite}):AnyLogicPackage{
+ const input=anyLogicInputSchema.parse({sector:scenario.sector,scenario,robotId,objects,site,baseline,process:processPresets[scenario.sector]});
+ return {schemaVersion:'ris-anylogic-input/2',inputHash:fingerprint(input),input,requiredOutputs:['inputHash','baseline.kpis','robot.kpis','robot.frames[]','engineVersion','modelVersion','runIds']};
 }
 
 const kpiSchema=z.object({
@@ -45,7 +59,7 @@ export const anyLogicFrameSchema=z.object({t:finite.min(0),robots:z.array(robotF
 const runSchema=z.object({runId:z.string().min(1).max(160),kpis:kpiSchema}).strict();
 const robotRunSchema=runSchema.extend({frames:z.array(anyLogicFrameSchema).min(1).max(200000)}).strict();
 export const anyLogicEvidenceSchema=z.object({
- schemaVersion:z.literal('ris-anylogic-evidence/1'),inputHash:z.string().regex(/^fnv1a64:[0-9a-f]{16}$/),engine:z.literal('AnyLogic'),engineVersion:z.string().min(1).max(80),
+ schemaVersion:z.literal('ris-anylogic-evidence/2'),inputHash:z.string().regex(/^fnv1a64:[0-9a-f]{16}$/),engine:z.literal('AnyLogic'),engineVersion:z.string().min(1).max(80),
  modelName:z.string().min(1).max(200),modelVersion:z.string().min(1).max(80),runGroupId:z.string().min(1).max(160),source:z.enum(['desktop','online','cloud']),
  input:anyLogicInputSchema,baseline:runSchema,robot:robotRunSchema,warnings:z.array(z.string().max(500)).max(100)
 }).strict().superRefine((value,ctx)=>{
@@ -87,10 +101,11 @@ export function assessAnyLogicEvidence(raw:AnyLogicEvidence,rawFinance:AnyLogicF
  const robotAnnualCompleted=evidence.robot.kpis.completed*finance.workdays;
  const annualOpex=finance.maintenancePerRobotYear*count+evidence.robot.kpis.energyKwh*finance.workdays*finance.electricityPerKwh+finance.residualHumanAnnualCost;
  const annualBenefit=finance.baselineAnnualCost-annualOpex;
- const comparable=capex>0&&finance.baselineAnnualCost>0&&finance.baselineAnnualCost>=finance.residualHumanAnnualCost&&baselineAnnualCompleted>=finance.annualRequiredJobs&&robotAnnualCompleted>=finance.annualRequiredJobs;
+ const siteReady=evidence.input.site.siteSpecific&&evidence.input.site.dimensionsConfirmed&&(evidence.input.site.geometryStatus==='validated'||evidence.input.site.geometryStatus==='traced');
+ const comparable=siteReady&&capex>0&&finance.baselineAnnualCost>0&&finance.baselineAnnualCost>=finance.residualHumanAnnualCost&&baselineAnnualCompleted>=finance.annualRequiredJobs&&robotAnnualCompleted>=finance.annualRequiredJobs;
  const rate=finance.discountRatePercent/100;
  const npv=-capex+Array.from({length:finance.horizonYears},(_,i)=>annualBenefit/Math.pow(1+rate,i+1)).reduce((a,b)=>a+b,0);
  return {capex,annualOpex,annualBenefit,tco:capex+annualOpex*finance.horizonYears,baselineAnnualCompleted,robotAnnualCompleted,comparable,
   roiPercent:comparable?(annualBenefit*finance.horizonYears-capex)/capex*100:null,npv:comparable?npv:null,paybackYears:comparable&&annualBenefit>0?capex/annualBenefit:null,
-  warnings:comparable?[...evidence.warnings]:[...evidence.warnings,'ROI/NPV заблокированы: нужны подтверждённые результаты AnyLogic для обоих процессов, одинаковый годовой план и заполненные денежные входы.']};
+  warnings:comparable?[...evidence.warnings]:[...evidence.warnings,...(!siteReady?['ROI/NPV заблокированы: геометрия конкретного объекта не подтверждена и не откалибрована.']:[]),'ROI/NPV заблокированы: нужны подтверждённые результаты AnyLogic для обоих процессов, одинаковый годовой план и заполненные денежные входы.']};
 }

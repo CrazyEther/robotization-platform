@@ -67,3 +67,14 @@ Acceptance:
 - Verification: typecheck PASS; lint PASS; 81/81 unit tests PASS; data:verify PASS; build PASS; Playwright desktop/mobile 11 PASS / 3 expected skips.
 - The ChatGPT Playwright MCP connector itself returned an SSE 404 in this session; repository Playwright CLI verification completed successfully.
 - Next engineering milestone remains AL-006 opening/compile smoke for generated .alp, followed by AL-007 real warehouse AMR/AGV AnyLogic model and trajectory/KPI export.
+
+### 2026-09-26 / S004 — calibrated site editor
+- Reworked template obstacles as generic walls/obstacles instead of fake pallet racks.
+- Added exact X/Y/width/depth editing at 0.1 m resolution with room-bound clamping, non-overlap guards and stable grab-offset dragging.
+- Racks now carry distinct storage capacity semantics for the future AnyLogic PalletRack mapping; walls remain geometry-only obstacles.
+- Added site provenance and geometry readiness to the AnyLogic input/hash: template, manual, JSON, image, PDF or CAD; template/reference geometry cannot unlock ROI/NPV.
+- JSON layout imports are validated as executable geometry. PNG/JPG clear template obstacles and become a reference layer until dimensions and traced geometry are explicitly confirmed. PDF/CAD remain reference inputs until a vector importer is implemented.
+- AnyLogic evidence and investment metrics now require site-specific calibrated geometry in addition to matched simulation evidence.
+- Downloaded the official AnyLogic “Transporters Moving in Free Space” Version 6 source package into ignored local tooling for AL-007 reference. It contains real TransporterFleet, MoveByTransporter and PalletRack Material Handling elements.
+- Verification after editor changes: typecheck PASS; lint PASS; 83/83 unit tests PASS; data:verify PASS; build PASS; Playwright desktop/mobile 11 PASS / 3 expected skips.
+- Next: adapt the official free-space Material Handling model into the minimal RIS warehouse kernel and export RIS trajectory/KPI evidence from a genuine AnyLogic run.

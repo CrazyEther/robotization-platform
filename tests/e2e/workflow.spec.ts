@@ -13,6 +13,11 @@ async function openTwin(page:import('@playwright/test').Page){
 }
 
 async function loadMatchingAnyLogicEvidence(page:import('@playwright/test').Page){
+ const width=page.getByLabel('Ширина, м');
+ await width.fill(String(Number(await width.inputValue())+1));
+ const confirm=page.getByRole('button',{name:/Подтвердить размеры и геометрию/});
+ await expect(confirm).toBeEnabled();
+ await confirm.click();
  const packageDownload=page.waitForEvent('download');
  await page.getByRole('button',{name:/Экспорт входов AnyLogic/}).click();
  const inputReceipt=await packageDownload;
@@ -21,7 +26,7 @@ async function loadMatchingAnyLogicEvidence(page:import('@playwright/test').Page
  type ReplayRobot={id:string;x:number;y:number;state:string;batteryPercent:number;taskId:string|null};
  const robots:ReplayRobot[]=Array.from({length:s.robot.count},(_:unknown,index:number)=>({id:'R'+(index+1),x:s.layout.pickup.x+.5,y:s.layout.pickup.y+.5,state:index?'idle':'loaded',batteryPercent:99,taskId:index?null:'T1'}));
  const common={created:120,backlog:0,throughputPerHour:15,meanQueueMinutes:.8,p95JobSeconds:145,resourceUtilization:.68,loadedMeters:0,emptyMeters:0,trafficWaitSeconds:0};
- const evidence={schemaVersion:'ris-anylogic-evidence/1',inputHash:pkg.inputHash,engine:'AnyLogic',engineVersion:'8.9.10',modelName:'RIS Transport Kernel',modelVersion:'0.1.0',runGroupId:'e2e-group',source:'desktop',input:pkg.input,
+ const evidence={schemaVersion:'ris-anylogic-evidence/2',inputHash:pkg.inputHash,engine:'AnyLogic',engineVersion:'8.9.10',modelName:'RIS Transport Kernel',modelVersion:'0.1.0',runGroupId:'e2e-group',source:'desktop',input:pkg.input,
   baseline:{runId:'baseline-e2e',kpis:{...common,completed:115,energyKwh:0}},
   robot:{runId:'robot-e2e',kpis:{...common,completed:119,energyKwh:5.2,loadedMeters:1800,emptyMeters:1500,trafficWaitSeconds:20},frames:[
    {t:0,robots:robots.map((r:ReplayRobot)=>({...r,state:'idle',taskId:null,batteryPercent:100})),backlog:0,completed:0},
@@ -65,16 +70,29 @@ test('changing a modeled input invalidates loaded AnyLogic evidence',async({page
  await expect(page.locator('.dt-investment')).toContainText('Заблокирован');
 });
 
-test('editor accepts a floor-plan image and edits scene geometry',async({page})=>{
+test('editor calibrates a floor-plan image and edits precise object geometry',async({page})=>{
  await openTwin(page);
  await page.locator('input[type=file]').first().setInputFiles({name:'facility-plan.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
- await expect(page.getByText(/масштабируемая подложка/)).toBeVisible();
+ await expect(page.getByText(/PNG\/JPG используется только как подложка/)).toBeVisible();
+ await expect(page.locator('.dt-site-state')).toContainText('не подтверждена');
+ await expect(page.locator('.dt-obj.wall')).toHaveCount(0);
  await page.getByRole('button',{name:'Стеллаж'}).click();
  const floor=page.locator('.dt-floor');const box=await floor.boundingBox();expect(box).not.toBeNull();
- if(box)await page.mouse.click(box.x+box.width*.55,box.y+box.height*.52);
+ if(box)await floor.click({position:{x:box.width*.15,y:box.height*.75}});
+ await expect(page.locator('.dt-obj.rack')).toHaveCount(1);
+ await page.getByLabel('Ширина объекта').fill('4.2');
+ await page.getByLabel('Глубина объекта').fill('2.5');
+ await expect(page.locator('.dt-obj.rack')).toHaveAttribute('width','4.2');
+ await expect(page.locator('.dt-obj.rack')).toHaveAttribute('height','2.5');
  await page.getByRole('button',{name:'Выбор'}).click();
- await expect(page.getByText('СВОЙСТВА ОБЪЕКТА')).toBeVisible();
- await expect(page.locator('.dt-obj.rack')).toHaveCount(4);
+ const rack=page.locator('.dt-obj.rack');const beforeX=Number(await rack.getAttribute('x')),beforeY=Number(await rack.getAttribute('y')),rb=await rack.boundingBox();expect(rb).not.toBeNull();
+ if(rb){await page.mouse.move(rb.x+rb.width/2,rb.y+rb.height/2);await page.mouse.down();await page.mouse.move(rb.x+rb.width/2+2,rb.y+rb.height/2+2);await page.mouse.up();}
+ expect(Math.abs(Number(await rack.getAttribute('x'))-beforeX)).toBeLessThan(1);
+ expect(Math.abs(Number(await rack.getAttribute('y'))-beforeY)).toBeLessThan(1);
+ await page.getByRole('button',{name:/Подтвердить размеры и геометрию/}).click();
+ await expect(page.locator('.dt-site-state')).toContainText('готова');
+ await page.getByLabel('Ширина объекта').fill('4.4');
+ await expect(page.locator('.dt-site-state')).toContainText('не подтверждена');
 });
 
 test('3D view replays positions from imported AnyLogic evidence',async({page})=>{
