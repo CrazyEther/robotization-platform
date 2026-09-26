@@ -1,6 +1,5 @@
-import type {SimulationInput} from '../ris/contracts';
-import type {SimulationScenarioV2} from './contracts';
-import {compileScenario} from './compiler';
+import type {SimulationInput} from './contracts';
+import {compileScenario,type SimulationScenarioV2} from '../simulation-core';
 
 export function compileLegacyScenario(input:SimulationInput):SimulationScenarioV2{
  const obstacles=input.layout.obstacles.map((r,index)=>({
