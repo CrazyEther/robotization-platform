@@ -1,57 +1,70 @@
 import {describe,expect,it} from 'vitest';
 import {createScenario} from '../packages/ris/contracts';
-import {runDigitalTwin,runBaseline,compareDigitalTwin,processPresets} from '../packages/ris/digitalTwin';
+import {
+ anyLogicEvidenceSchema,assessAnyLogicEvidence,buildAnyLogicPackage,evidenceMatchesPackage,
+ processPresets,type AnyLogicEvidence,type AnyLogicFinance,type AnyLogicSceneObject
+} from '../packages/ris/anylogic';
 
-describe('Digital twin execution uses trajectories as calculation evidence',()=>{
- it('simulates warehouse robots with frames, queues, traffic waits and energy',()=>{
-  const scenario=createScenario('warehouse');
-  scenario.workload.shiftHours=.5;
-  scenario.workload.demandPerHour=40;
-  scenario.robot.count=2;
-  const result=runDigitalTwin({scenario,robotId:'mir250',frameStepSeconds:2});
-  expect(result.engine).toBe('RIS Digital Twin');
-  expect(result.frames.length).toBeGreaterThan(20);
-  expect(result.created).toBeGreaterThan(0);
-  expect(result.completed).toBeGreaterThan(0);
-  expect(result.completed).toBeLessThanOrEqual(result.created);
-  expect(result.energyKwh).toBeGreaterThan(0);
-  expect(result.robotUtilization).toBeGreaterThan(0);
-  expect(result.robots).toHaveLength(2);
-  expect(result.frames.some(f=>f.robots.some(r=>r.state==='loaded'))).toBe(true);
-  for(const frame of result.frames){const cells=frame.robots.map(r=>r.x+','+r.y);expect(new Set(cells).size).toBe(cells.length);}
-  expect(result.timeline.length).toBeGreaterThan(3);
+const objects:AnyLogicSceneObject[]=[
+ {id:'rack-1',kind:'rack',x:8,y:5,w:2,h:4,blocking:true,label:'Rack',capacity:1},
+ {id:'charger-1',kind:'charger',x:2,y:2,w:1,h:1,blocking:false,label:'Charge',capacity:2}
+];
+const finance:AnyLogicFinance={robotUnitPrice:1900000,integration:400000,infrastructure:300000,maintenancePerRobotYear:120000,electricityPerKwh:9,baselineAnnualCost:5000000,residualHumanAnnualCost:900000,workdays:250,horizonYears:5,discountRatePercent:12,annualRequiredJobs:1000};
+
+function evidenceFor(sector:'warehouse'|'hospital'|'airport'|'factory'='warehouse'):AnyLogicEvidence{
+ const scenario=createScenario(sector);
+ const pkg=buildAnyLogicPackage({scenario,robotId:'mir250',objects,baseline:{workers:4,speedMps:1.1,serviceSeconds:80}});
+ const robots=Array.from({length:scenario.robot.count},(_,i)=>({id:'R'+(i+1),x:1+i,y:1,state:'idle',batteryPercent:100,taskId:null as string|null}));
+ return anyLogicEvidenceSchema.parse({
+  schemaVersion:'ris-anylogic-evidence/1',inputHash:pkg.inputHash,engine:'AnyLogic',engineVersion:'8.9.10',modelName:'RIS Transport Kernel',modelVersion:'0.1.0',runGroupId:'run-group-1',source:'desktop',input:pkg.input,
+  baseline:{runId:'base-1',kpis:{created:120,completed:110,backlog:10,throughputPerHour:13.75,meanQueueMinutes:1.2,p95JobSeconds:180,resourceUtilization:.7,energyKwh:0,loadedMeters:0,emptyMeters:0,trafficWaitSeconds:0}},
+  robot:{runId:'robot-1',kpis:{created:120,completed:118,backlog:2,throughputPerHour:14.75,meanQueueMinutes:.5,p95JobSeconds:120,resourceUtilization:.62,energyKwh:5,loadedMeters:1800,emptyMeters:1600,trafficWaitSeconds:45},frames:[
+   {t:0,robots,backlog:0,completed:0},
+   {t:10,robots:robots.map((r,i)=>({...r,x:r.x+2,state:i===0?'loaded':'idle',batteryPercent:99,taskId:i===0?'T1':null})),backlog:1,completed:0}
+  ]},warnings:[]
  });
- it('same seed and scene are reproducible',()=>{
-  const scenario=createScenario('hospital');scenario.workload.shiftHours=.25;
-  const a=runDigitalTwin({scenario,robotId:'omron-ld250',frameStepSeconds:2});
-  const b=runDigitalTwin({scenario,robotId:'omron-ld250',frameStepSeconds:2});
-  expect(a.completed).toBe(b.completed);
-  expect(a.frames).toEqual(b.frames);
+}
+
+describe('AnyLogic evidence is the only simulation truth accepted by RIS',()=>{
+ it('exports a versioned scene/process/robot package for AnyLogic',()=>{
+  const scenario=createScenario('hospital');
+  const pkg=buildAnyLogicPackage({scenario,robotId:'omron-ld250',objects,baseline:{workers:3,speedMps:1,serviceSeconds:90}});
+  expect(pkg.schemaVersion).toBe('ris-anylogic-input/1');
+  expect(pkg.input.sector).toBe('hospital');
+  expect(pkg.input.objects).toEqual(objects);
+  expect(pkg.inputHash).toMatch(/^fnv1a64:[0-9a-f]{16}$/);
+  expect(pkg.requiredOutputs).toContain('inputHash');
+  expect(pkg.requiredOutputs).toContain('robot.frames[]');
+  expect(pkg.requiredOutputs).toContain('robot.kpis');
  });
- it('uses distinct process presets for warehouse hospital and airport',()=>{
+ it('uses distinct workflow presets for warehouse, hospital and airport',()=>{
   expect(processPresets.warehouse.task).toMatch(/пал/i);
   expect(processPresets.hospital.task).toMatch(/мед/i);
   expect(processPresets.airport.task).toMatch(/багаж/i);
   expect(new Set(Object.values(processPresets).map(x=>x.task)).size).toBe(4);
  });
- it('simulates baseline with the same demand and geometry',()=>{
-  const scenario=createScenario('airport');scenario.workload.shiftHours=.25;
-  const baseline=runBaseline({scenario,workers:2,speedMps:1.1,serviceSeconds:80});
-  const robot=runDigitalTwin({scenario,robotId:'ronavi-h1500',frameStepSeconds:4});
-  expect(baseline.created).toBe(robot.created);
-  expect(baseline.completed).toBeGreaterThan(0);
-  expect(baseline.meanQueueMinutes).toBeGreaterThanOrEqual(0);
+ it('accepts replay frames only when evidence echoes the exact current input',()=>{
+  const evidence=evidenceFor('warehouse');
+  const pkg=buildAnyLogicPackage({scenario:evidence.input.scenario,robotId:evidence.input.robotId,objects:evidence.input.objects,baseline:evidence.input.baseline});
+  expect(evidenceMatchesPackage(evidence,pkg)).toBe(true);
+  const changed=structuredClone(pkg);changed.input.scenario.robot.count++;
+  expect(evidenceMatchesPackage(evidence,changed)).toBe(false);
+  expect(evidenceMatchesPackage({...evidence,inputHash:'fnv1a64:0000000000000000'},pkg)).toBe(false);
  });
- it('only exposes ROI when baseline and robot scenario meet the same annual demand',()=>{
-  const scenario=createScenario('warehouse');scenario.workload.shiftHours=.5;
-  const baseline=runBaseline({scenario,workers:5,speedMps:1.2,serviceSeconds:40});
-  const robot=runDigitalTwin({scenario,robotId:'mir250',frameStepSeconds:4});
-  const finance={robotUnitPrice:1900000,integration:400000,infrastructure:300000,maintenancePerRobotYear:120000,electricityPerKwh:9,baselineAnnualCost:5000000,residualHumanAnnualCost:900000,workdays:250,horizonYears:5,discountRatePercent:12,annualRequiredJobs:1};
-  const result=compareDigitalTwin({scenario,baseline,robot,finance});
+ it('rejects malformed or physically inconsistent AnyLogic evidence',()=>{
+  const valid=evidenceFor();
+  expect(()=>anyLogicEvidenceSchema.parse({...valid,robot:{...valid.robot,kpis:{...valid.robot.kpis,completed:121}}})).toThrow();
+  expect(()=>anyLogicEvidenceSchema.parse({...valid,robot:{...valid.robot,frames:[{t:0,robots:[{id:'R1',x:-1,y:2,state:'moving'}],backlog:0,completed:0}]}})).toThrow();
+  const missingRobot=structuredClone(valid);missingRobot.robot.frames[0].robots.pop();
+  expect(()=>anyLogicEvidenceSchema.parse(missingRobot)).toThrow(/robot count/i);
+ });
+ it('computes ROI only from matched AnyLogic baseline and robot outputs',()=>{
+  const evidence=evidenceFor();
+  const result=assessAnyLogicEvidence(evidence,finance);
   expect(result.comparable).toBe(true);
   expect(result.capex).toBeGreaterThan(0);
   expect(result.roiPercent).not.toBeNull();
-  const blocked=compareDigitalTwin({scenario,baseline,robot,finance:{...finance,annualRequiredJobs:99999999}});
+  const blocked=assessAnyLogicEvidence(evidence,{...finance,annualRequiredJobs:99999999});
   expect(blocked.roiPercent).toBeNull();
  });
 });

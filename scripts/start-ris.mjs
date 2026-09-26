@@ -12,5 +12,5 @@ api.on('error',error=>{console.error('Web/API could not start:',error.message);s
 api.on('exit',code=>{if(!stopping&&code!==0){console.error('Web/API exited unexpectedly (code '+code+').');process.exitCode=1;}});
 process.on('SIGINT',stop);process.on('SIGTERM',stop);
 console.log('\nRobot Investment Studio: http://127.0.0.1:'+webPort);
-console.log('Simulation runtime: RIS Digital Twin grid-agv/1.0 (browser execution + trajectory replay).');
-console.log('AnyLogic is an optional professional adapter and is never emulated when not connected.\n');
+console.log('Simulation evidence: AnyLogic result required for trusted KPI, replay and economics.');
+console.log('Browser 2D/3D is authoring + replay only; RIS does not emulate AnyLogic execution.\n');
