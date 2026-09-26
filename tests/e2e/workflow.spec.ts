@@ -40,11 +40,12 @@ async function loadMatchingAnyLogicEvidence(page:import('@playwright/test').Page
 test('AnyLogic evidence: scene → package → verified replay → ROI → export',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await openTwin(page);
- await expect(page.getByText(/AnyLogic · результат не загружен/)).toBeVisible();
+ await expect(page.getByText(/Simulation Core v2 · fnv1a64:/)).toBeVisible();
+ await expect(page.getByRole('button',{name:/Экспорт Simulation Core v2/})).toBeVisible();
  await expect(page.locator('.dt-kpis')).toContainText('KPI отсутствуют');
  await expect(page.locator('.dt-investment')).toContainText('Заблокирован');
  const {evidence}=await loadMatchingAnyLogicEvidence(page);
- await expect(page.locator('.dt-engine strong').filter({hasText:'AnyLogic 8.9.10'})).toBeVisible();
+ await expect(page.locator('.dt-engine')).toContainText('Validation: AnyLogic 8.9.10');
  await expect(page.locator('.dt-kpi-grid')).toContainText('119/120');
  await expect(page.getByRole('slider',{name:'Время симуляции'})).toBeVisible();
  await expect(page.locator('.dt-compare')).toContainText('ИСХОДНЫЙ ПРОЦЕСС · ANYLOGIC');
@@ -55,7 +56,10 @@ test('AnyLogic evidence: scene → package → verified replay → ROI → expor
  await page.getByRole('button',{name:/Экспорт проекта и траекторий/}).click();
  const receipt=await download;
  const project=JSON.parse(await readFile(await receipt.path(),'utf8'));
- expect(project.kind).toBe('ris-anylogic-project');
+ expect(project.kind).toBe('ris-digital-twin-project');
+ expect(project.version).toBe(7);
+ expect(project.simulationCoreScenario.schemaVersion).toBe('ris-simulation-scenario/2');
+ expect(project.simulationCoreScenario.scenarioHash).toMatch(/^fnv1a64:/);
  expect(project.evidence.engine).toBe('AnyLogic');
  expect(project.evidence.robot.runId).toBe(evidence.robot.runId);
  expect(project.assessment.roiPercent).not.toBeNull();
