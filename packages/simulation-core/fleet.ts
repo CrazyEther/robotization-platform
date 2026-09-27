@@ -3,9 +3,10 @@ import {runEventLoop,type DesEvent} from './des';
 import {generateLinearMotionEvents,planRestToRestMotion} from './motion';
 import {planScenarioRoute,type NavigationRoute} from './navigation';
 import {parseEventTrace,type EventTrace} from './trace';
+import {ReservationTable} from './traffic';
 
 type Task={id:string;arrival:number};
-type RobotState={id:string;busy:boolean};
+type RobotState={id:string;busy:boolean;busyStartedAt:number|null};
 type SimPayload=
  | {kind:'arrival';task:Task}
  | {kind:'loadDone';task:Task;robot:RobotState}
@@ -19,7 +20,7 @@ export type FleetRun={
  metrics:{
   created:number;assigned:number;completed:number;backlog:number;
   meanQueueSeconds:number|null;p95JobSeconds:number|null;
-  throughputPerHour:number;robotUtilization:number;
+  throughputPerHour:number;robotUtilization:number;trafficWaitSeconds:number;
  };
  warnings:string[];
 };
@@ -103,9 +104,11 @@ export function runTransportFleet(
  const taskArrivals=arrivals(scenario,horizon);
  const tasks=taskArrivals.map((arrival,index):Task=>({id:'T'+(index+1),arrival}));
  const robots=Array.from({length:robotSpec.fleetSize},(_,index):RobotState=>({
-  id:robotSpec.id+'#'+(index+1),busy:false,
+  id:robotSpec.id+'#'+(index+1),busy:false,busyStartedAt:null,
  }));
- const pending:Task[]=[];let pendingHead=0,assigned=0,completed=0,busySeconds=0;
+ const traffic=new ReservationTable();
+ const corridorResource='corridor:'+source.floorId+':'+[source.objectId,sink.objectId].sort().join('|');
+ const pending:Task[]=[];let pendingHead=0,assigned=0,completed=0,busySeconds=0,trafficWaitSeconds=0;
  const queueWaits:number[]=[],jobSeconds:number[]=[];
  type RawTraceEvent=Parameters<typeof parseEventTrace>[0] extends never?never:Record<string,unknown>;
  const traceRecords:{event:RawTraceEvent;order:number}[]=[];let traceOrder=0;
@@ -114,6 +117,7 @@ export function runTransportFleet(
   traceRecords.push({event,order:traceOrder++});
  };
  const addRouteMotion=(motionRoute:NavigationRoute,startTime:number,resourceId:string,idPrefix:string,taskId:string|undefined,motionKind:'loaded'|'empty')=>{
+  if(startTime>horizon+EPS)return;
   let t=startTime;
   for(let segment=0;segment<motionRoute.points.length-1;segment++){
    const a=motionRoute.points[segment],b=motionRoute.points[segment+1];
@@ -131,12 +135,10 @@ export function runTransportFleet(
  const dispatch=(now:number,schedule:(event:DesEvent<SimPayload>)=>void)=>{
   while(pendingHead<pending.length){
    const available=robots.find(item=>!item.busy);if(!available)break;
-   const task=pending[pendingHead++];available.busy=true;assigned++;
+   const task=pending[pendingHead++];available.busy=true;available.busyStartedAt=now;assigned++;
    const wait=now-task.arrival;queueWaits.push(wait);
    push({id:task.id+'-assigned',t:now,type:'task.assigned',taskId:task.id,resourceId:available.id,data:{queueSeconds:wait}});
    push({id:task.id+'-load-start',t:now,type:'process.started',taskId:task.id,resourceId:source.objectId,data:{phase:'loading'}});
-   const readyAt=now+robotSpec.handling.loadSeconds+loadedMotionSeconds+robotSpec.handling.unloadSeconds+returnMotionSeconds;
-   busySeconds+=Math.max(0,Math.min(horizon,readyAt)-now);
    schedule({at:now+robotSpec.handling.loadSeconds,priority:0,payload:{kind:'loadDone',task,robot:available}});
   }
  };
@@ -150,8 +152,11 @@ export function runTransportFleet(
   }
   if(payload.kind==='loadDone'){
    push({id:payload.task.id+'-load-complete',t:now,type:'process.completed',taskId:payload.task.id,resourceId:source.objectId,data:{phase:'loading'}});
-   addRouteMotion(route,now,payload.robot.id,payload.task.id+'-'+payload.robot.id+'-loaded',payload.task.id,'loaded');
-   schedule({at:now+loadedMotionSeconds,priority:0,payload:{kind:'loadedMotionDone',task:payload.task,robot:payload.robot}});
+   const reservation=traffic.reserve({resourceId:corridorResource,ownerId:payload.robot.id,earliestStart:now,duration:loadedMotionSeconds});
+   const horizonWait=Math.max(0,Math.min(horizon,reservation.start)-now);trafficWaitSeconds+=horizonWait;
+   if(reservation.waitSeconds>0)push({id:payload.task.id+'-traffic-loaded',t:now,type:'traffic.conflict',taskId:payload.task.id,resourceId:payload.robot.id,data:{waitSeconds:horizonWait,reservedStart:reservation.start,resource:corridorResource}});
+   addRouteMotion(route,reservation.start,payload.robot.id,payload.task.id+'-'+payload.robot.id+'-loaded',payload.task.id,'loaded');
+   schedule({at:reservation.end,priority:0,payload:{kind:'loadedMotionDone',task:payload.task,robot:payload.robot}});
    return;
   }
   if(payload.kind==='loadedMotionDone'){
@@ -163,12 +168,17 @@ export function runTransportFleet(
    push({id:payload.task.id+'-unload-complete',t:now,type:'process.completed',taskId:payload.task.id,resourceId:sink.objectId,data:{phase:'unloading'}});
    push({id:payload.task.id+'-completed',t:now,type:'task.completed',taskId:payload.task.id,resourceId:payload.robot.id});
    completed++;jobSeconds.push(now-payload.task.arrival);
-   addRouteMotion(returnRoute,now,payload.robot.id,payload.task.id+'-'+payload.robot.id+'-empty',undefined,'empty');
-   schedule({at:now+returnMotionSeconds,priority:0,payload:{kind:'returnDone',robot:payload.robot}});
+   const reservation=traffic.reserve({resourceId:corridorResource,ownerId:payload.robot.id,earliestStart:now,duration:returnMotionSeconds});
+   const horizonWait=Math.max(0,Math.min(horizon,reservation.start)-now);trafficWaitSeconds+=horizonWait;
+   if(reservation.waitSeconds>0)push({id:payload.task.id+'-traffic-empty',t:now,type:'traffic.conflict',resourceId:payload.robot.id,data:{waitSeconds:horizonWait,reservedStart:reservation.start,resource:corridorResource}});
+   addRouteMotion(returnRoute,reservation.start,payload.robot.id,payload.task.id+'-'+payload.robot.id+'-empty',undefined,'empty');
+   schedule({at:reservation.end,priority:0,payload:{kind:'returnDone',robot:payload.robot}});
    return;
   }
-  payload.robot.busy=false;dispatch(now,schedule);
+  if(payload.robot.busyStartedAt!==null)busySeconds+=now-payload.robot.busyStartedAt;
+  payload.robot.busy=false;payload.robot.busyStartedAt=null;dispatch(now,schedule);
  });
+ for(const robot of robots)if(robot.busyStartedAt!==null)busySeconds+=Math.max(0,horizon-robot.busyStartedAt);
  const events=traceRecords.filter(record=>(record.event.t as number)<=horizon+EPS)
   .sort((a,b)=>(a.event.t as number)-(b.event.t as number)||a.order-b.order).map(record=>record.event);
  const trace=parseEventTrace({
@@ -183,10 +193,12 @@ export function runTransportFleet(
    meanQueueSeconds,p95JobSeconds:percentile95(jobSeconds),
    throughputPerHour:horizon>0?completed/(horizon/3600):0,
    robotUtilization:horizon>0?busySeconds/(robotSpec.fleetSize*horizon):0,
+   trafficWaitSeconds,
   },
   warnings:[
    'simcore-fleet/1 uses FCFS dispatch and a return-to-source policy.',
-   'Traffic conflicts, charging, failures and continuous cornering are not modeled in this runner yet.',
+   'Traffic uses a conservative exclusive-corridor reservation token; segment-level MAPF is not modeled yet.',
+   'Charging, failures and continuous cornering are not modeled in this runner yet.',
   ],
  };
 }

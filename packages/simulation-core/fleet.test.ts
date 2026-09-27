@@ -2,7 +2,7 @@ import {describe,expect,it} from 'vitest';
 import {compileScenario} from './compiler';
 import {runTransportFleet} from './fleet';
 
-function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProcess='fixed',seed=42}:{fleetSize?:number;demandPerHour?:number;shiftHours?:number;arrivalProcess?:'fixed'|'poisson';seed?:number}={}){
+function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProcess='fixed',seed=42,loadSeconds=10,unloadSeconds=20}:{fleetSize?:number;demandPerHour?:number;shiftHours?:number;arrivalProcess?:'fixed'|'poisson';seed?:number;loadSeconds?:number;unloadSeconds?:number}={}){
  return compileScenario({
   schemaVersion:'ris-simulation-scenario/2',id:'fleet',name:'Fleet fixture',
   facility:{schemaVersion:'ris-facility/2',id:'f',name:'F',unit:'m',
@@ -21,7 +21,7 @@ function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProces
    kinematics:{maxSpeedMps:2,accelerationMps2:1,decelerationMps2:1,turnRadiusM:0},
    dimensions:{lengthM:.2,widthM:.2,heightM:.2},
    battery:{capacityWh:2000,chargeW:1000,whPerMeter:.2,minSoc:.15},
-   handling:{loadSeconds:10,unloadSeconds:20},navigationType:'free-space'}],
+   handling:{loadSeconds,unloadSeconds},navigationType:'free-space'}],
   workload:{demandPerHour,unitLoadKg:50,shiftHours,arrivalProcess,seed},
  });
 }
@@ -49,6 +49,12 @@ describe('Transport fleet DES',()=>{
   const run=runTransportFleet(fixture(),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:1});
   const resources=new Set(run.trace.events.filter(e=>e.type==='robot.motion').map(e=>e.resourceId));
   expect(resources).toEqual(new Set(['robot-1#1','robot-1#2']));
+ });
+ it('serializes shared-corridor motion and records traffic waiting',()=>{
+  const run=runTransportFleet(fixture({fleetSize:2,demandPerHour:7200,shiftHours:10/3600,loadSeconds:0,unloadSeconds:0}),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:.5});
+  expect(run.metrics.trafficWaitSeconds).toBeCloseTo(9.5,12);
+  expect(run.trace.events.filter(e=>e.type==='traffic.conflict').length).toBeGreaterThan(0);
+  expect(run.warnings.join(' ')).toMatch(/exclusive-corridor/i);
  });
  it('replays Poisson arrivals reproducibly from the scenario seed',()=>{
   const scenario=fixture({fleetSize:2,demandPerHour:10,shiftHours:1,arrivalProcess:'poisson',seed:123});
