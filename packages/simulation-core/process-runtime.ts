@@ -2,13 +2,15 @@ import type {SimulationScenarioV2} from './contracts';
 import {runEventLoop,type DesEvent} from './des';
 import {parseEventTrace,type EventTrace} from './trace';
 import {generateArrivalTimes} from './workload';
+import {generateDowntimeWindows,nextOperationalTime,operationalSeconds,serviceCompletionTime,type DowntimeWindow} from './reliability';
 
 type ProcessNode=SimulationScenarioV2['process']['nodes'][number];
 type Task={id:string;arrival:number};
 type QueueItem={task:Task;node:ProcessNode;enteredAt:number};
-type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number};
+type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number;downtimes:DowntimeWindow[];wakeAt:number|null};
 type Payload=
  | {kind:'arrival';task:Task}
+ | {kind:'wake';resourceId:string}
  | {kind:'complete';task:Task;node:ProcessNode;resourceId:string};
 
 export type ProcessRun={
@@ -18,15 +20,22 @@ export type ProcessRun={
   created:number;completed:number;backlog:number;
   throughputPerHour:number;meanQueueSeconds:number|null;p95CycleSeconds:number|null;
   resourceUtilization:Record<string,number>;
+  resourceAvailability:Record<string,number>;downtimeSeconds:Record<string,number>;
  };
  warnings:string[];
 };
 
+const EPS=1e-9;
 const MAX_TASKS=100_000;
 const percentile95=(values:number[])=>{
  if(!values.length)return null;
  const sorted=[...values].sort((a,b)=>a-b);
  return sorted[Math.max(0,Math.ceil(sorted.length*.95)-1)];
+};
+const seedForResource=(base:number,id:string)=>{
+ let hash=2166136261>>>0;
+ for(let i=0;i<id.length;i++){hash^=id.charCodeAt(i);hash=Math.imul(hash,16777619)>>>0;}
+ return (base^hash)>>>0;
 };
 function linearOrder(scenario:SimulationScenarioV2):ProcessNode[]{
  const nodes=new Map(scenario.process.nodes.map(node=>[node.id,node] as const));
@@ -71,17 +80,18 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
   const object=node.facilityObjectId?objectMap.get(node.facilityObjectId):undefined;
   const capacity=object?object.capacity:1;
   if(capacity<1)throw new Error('Process resource capacity must be >= 1: '+key);
-  return {key,capacity};
+  return {key,capacity,reliability:object?.reliability};
  };
+ const horizon=scenario.workload.shiftHours*3600;
  const resources=new Map<string,ResourceState>();
  for(const node of order){
   const duration=nodeDuration(node);
   if(node.kind==='source'||node.kind==='sink'||duration<=0)continue;
-  const {key,capacity}=resourceFor(node),existing=resources.get(key);
+  const {key,capacity,reliability}=resourceFor(node),existing=resources.get(key);
   if(existing&&existing.capacity!==capacity)throw new Error('Shared process resource has inconsistent capacity: '+key);
-  if(!existing)resources.set(key,{id:key,capacity,busy:0,queue:[],busySeconds:0});
+  if(!existing)resources.set(key,{id:key,capacity,busy:0,queue:[],busySeconds:0,
+   downtimes:reliability?generateDowntimeWindows(reliability,horizon,seedForResource(scenario.workload.seed,key)):[],wakeAt:null});
  }
- const horizon=scenario.workload.shiftHours*3600;
  const arrivals=generateArrivalTimes(scenario.workload,horizon,MAX_TASKS);
  const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival}));
  let created=0,completed=0,traceOrder=0;
@@ -106,17 +116,33 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
  };
  const dispatchResource=(resource:ResourceState,now:number,schedule:(event:DesEvent<Payload>)=>void)=>{
   while(resource.busy<resource.capacity&&resource.queue.length){
+   const start=nextOperationalTime(now,resource.downtimes);
+   if(start>now+EPS){
+    if(resource.wakeAt===null||start<resource.wakeAt-EPS){
+     resource.wakeAt=start;
+     schedule({at:start,priority:0,payload:{kind:'wake',resourceId:resource.id}});
+    }
+    break;
+   }
    const item=resource.queue.shift()!,duration=nodeDuration(item.node),wait=now-item.enteredAt;
+   const completion=serviceCompletionTime(now,duration,resource.downtimes);
    resource.busy++;queueWaits.push(wait);
-   resource.busySeconds+=Math.max(0,Math.min(horizon,now+duration)-now);
+   resource.busySeconds+=Math.min(duration,operationalSeconds(now,Math.min(horizon,completion),resource.downtimes));
    push({id:item.task.id+'-'+item.node.id+'-start',t:now,type:'process.started',taskId:item.task.id,
     ...(item.node.facilityObjectId?{resourceId:item.node.facilityObjectId}:{}),
     data:{nodeId:item.node.id,queueSeconds:wait}});
-   schedule({at:now+duration,priority:0,payload:{
+   schedule({at:completion,priority:0,payload:{
     kind:'complete',task:item.task,node:item.node,resourceId:resource.id,
    }});
   }
  };
+ for(const resource of resources.values()){
+  resource.downtimes.forEach((window,index)=>{
+   if(window.start<horizon)push({id:'failure-'+resource.id+'-'+index,t:window.start,type:'resource.failed',resourceId:resource.id,
+    data:{repairExpectedAt:window.end}});
+   if(window.end<=horizon)push({id:'repair-'+resource.id+'-'+index,t:window.end,type:'resource.repaired',resourceId:resource.id});
+  });
+ }
  const initial:DesEvent<Payload>[]=tasks.map(task=>({at:task.arrival,priority:1,payload:{kind:'arrival',task}}));
  runEventLoop(initial,horizon,(event,schedule)=>{
   const {payload}=event,now=event.at;
@@ -124,6 +150,12 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
    created++;
    push({id:payload.task.id+'-created',t:now,type:'task.created',taskId:payload.task.id});
    enter(payload.task,order[0],now,schedule);
+   return;
+  }
+  if(payload.kind==='wake'){
+   const resource=resources.get(payload.resourceId)!;
+   resource.wakeAt=null;
+   dispatchResource(resource,now,schedule);
    return;
   }
   const resource=resources.get(payload.resourceId)!;
@@ -143,16 +175,22 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
  const resourceUtilization=Object.fromEntries([...resources.values()].map(resource=>[
   resource.id,horizon>0?resource.busySeconds/(resource.capacity*horizon):0,
  ]));
+ const downtimeSeconds=Object.fromEntries([...resources.values()].map(resource=>[
+  resource.id,horizon>0?horizon-operationalSeconds(0,horizon,resource.downtimes):0,
+ ]));
+ const resourceAvailability=Object.fromEntries([...resources.values()].map(resource=>[
+  resource.id,horizon>0?operationalSeconds(0,horizon,resource.downtimes)/horizon:1,
+ ]));
  return {
   engine,scenarioHash:scenario.scenarioHash,trace,
   metrics:{
    created,completed,backlog:created-completed,
    throughputPerHour:horizon>0?completed/(horizon/3600):0,
    meanQueueSeconds:queueWaits.length?queueWaits.reduce((a,b)=>a+b,0)/queueWaits.length:null,
-   p95CycleSeconds:percentile95(cycles),resourceUtilization,
+   p95CycleSeconds:percentile95(cycles),resourceUtilization,resourceAvailability,downtimeSeconds,
   },
   warnings:[
-   'simcore-process/1 executes one connected linear process with deterministic node durations and FCFS resources.',
+   'simcore-process/1 executes one connected linear process with deterministic node durations, FCFS resources and reproducible MTBF/MTTR downtime.',
    'Branching, rework loops, finite buffer occupancy and coupling to mobile transport are intentionally fail-closed in this version.',
   ],
  };

@@ -6,7 +6,7 @@ const id=z.string().trim().min(1).max(160);
 const eventType=z.enum([
  'task.created','task.assigned','task.completed',
  'robot.motion','robot.waiting','robot.charging','robot.failed',
- 'resource.requested','resource.reserved','resource.released',
+ 'resource.requested','resource.reserved','resource.released','resource.failed','resource.repaired',
  'process.started','process.completed','traffic.conflict','traffic.deadlock',
 ]);
 const position=z.object({floorId:id,x:finite,y:finite,z:finite.optional()}).strict();

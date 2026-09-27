@@ -3,6 +3,9 @@ import {z} from 'zod';
 const id=z.string().trim().min(1).max(128);
 const finite=z.number().finite();
 const positive=finite.positive();
+export const reliabilitySchema=z.object({
+ model:z.enum(['fixed','exponential']),mtbfSeconds:positive.max(1e12),mttrSeconds:positive.max(1e12),
+}).strict();
 const sourceSchema=z.object({
  type:z.enum(['template','manual','json','image','pdf','cad','imported']),
  name:z.string().trim().min(1).max(255).nullable(),
@@ -20,6 +23,7 @@ export const facilityObjectSchema=z.object({
  blocking:z.boolean().default(false),
  capacity:z.number().int().min(0).max(100000).default(0),
  properties:z.record(z.string(),z.union([z.string(),finite,z.boolean()])).default({}),
+ reliability:reliabilitySchema.optional(),
 }).strict();
 export const floorSchema=z.object({
  id,label:z.string().trim().min(1).max(200),zMeters:finite,

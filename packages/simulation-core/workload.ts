@@ -1,12 +1,7 @@
 import type {SimulationScenarioV2} from './contracts';
+import {createSeededRandom} from './random';
 
 const EPS=1e-9;
-
-function mulberry32(seed:number){
- let state=seed>>>0;
- return ()=>{state=(state+0x6D2B79F5)>>>0;let t=state;t=Math.imul(t^(t>>>15),t|1);
-  t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
-}
 
 export function generateArrivalTimes(
  workload:SimulationScenarioV2['workload'],horizonSeconds:number,maxTasks=100_000,
@@ -21,7 +16,7 @@ export function generateArrivalTimes(
   for(let t=0;t<horizonSeconds-EPS;t+=interval)push(t);
   return result;
  }
- const random=mulberry32(workload.seed);let t=0;
+ const random=createSeededRandom(workload.seed);let t=0;
  while(true){
   const u=Math.max(Number.MIN_VALUE,1-random());
   t+=-Math.log(u)/rate;

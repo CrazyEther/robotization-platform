@@ -61,6 +61,26 @@ describe('Domain-neutral process runtime',()=>{
   expect(two.metrics.meanQueueSeconds).not.toBeNull();
   expect(two.metrics.meanQueueSeconds!).toBeLessThan(one.metrics.meanQueueSeconds!);
  });
+
+ it('pauses processing across MTBF/MTTR downtime and exposes availability evidence',()=>{
+  const base=scenario('factory','process',30,1);
+  const raw=structuredClone(base);
+  delete (raw as Partial<typeof raw>).scenarioHash;
+  raw.workload.demandPerHour=60;
+  raw.workload.shiftHours=60/3600;
+  const resource=raw.facility.floors[0].objects.find(o=>o.id==='work-resource')!;
+  resource.reliability={model:'fixed',mtbfSeconds:10,mttrSeconds:10};
+  const run=runProcessNetwork(compileScenario(raw));
+  expect(run.metrics.created).toBe(1);
+  expect(run.metrics.completed).toBe(1);
+  expect(run.metrics.p95CycleSeconds).toBe(50);
+  expect(run.metrics.downtimeSeconds['work-resource']).toBe(30);
+  expect(run.metrics.resourceAvailability['work-resource']).toBeCloseTo(.5);
+  expect(run.metrics.resourceUtilization['work-resource']).toBeCloseTo(.5);
+  expect(run.trace.events.filter(e=>e.type==='resource.failed')).toHaveLength(3);
+  expect(run.trace.events.filter(e=>e.type==='resource.repaired')).toHaveLength(3);
+ });
+
  it('fails closed on branching or cyclic process graphs in v1',()=>{
   const base=scenario('factory','process',5,1);
   const branch=structuredClone(base);
