@@ -54,6 +54,18 @@ describe('Simulation Core v2 contracts',()=>{
   outside.facility.floors[0].objects[0].geometry.x=outside.facility.floors[0].widthMeters+1;
   expect(()=>compileScenario(outside)).toThrow(/bounds/i);
  });
+ it('rejects ambiguous floor, edge and fleet resource identities',()=>{
+  const floorDuplicate=structuredClone(neutralScenario());
+  floorDuplicate.facility.floors.push(structuredClone(floorDuplicate.facility.floors[0]));
+  expect(()=>compileScenario(floorDuplicate)).toThrow(/floor ids/i);
+  const edgeDuplicate=structuredClone(neutralScenario());
+  edgeDuplicate.process.edges.push(structuredClone(edgeDuplicate.process.edges[0]));
+  expect(()=>compileScenario(edgeDuplicate)).toThrow(/edge ids/i);
+  const resourceCollision=structuredClone(neutralScenario());
+  resourceCollision.facility.floors[0].objects[0].id='robot-1#1';
+  resourceCollision.process.nodes[0].facilityObjectId='robot-1#1';
+  expect(()=>compileScenario(resourceCollision)).toThrow(/resource ids/i);
+ });
  it('uses one versioned event trace as the replay truth',()=>{
   const scenario=neutralScenario();
   const trace=parseEventTrace({

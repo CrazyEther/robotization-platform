@@ -75,6 +75,13 @@ describe('Deterministic single-robot motion',()=>{
   expect(trace.events).toHaveLength(events.length);
  });
 
+ it('fails fast before an unsafe replay sampling explosion',()=>{
+  expect(()=>generateLinearMotionEvents({
+   idPrefix:'dense',resourceId:'r',floorId:'f',start:{x:0,y:0},end:{x:100,y:0},
+   startTimeSeconds:0,samplePeriodSeconds:1e-6,
+   kinematics:{maxSpeedMps:1,accelerationMps2:1,decelerationMps2:1},
+  })).toThrow(/sample limit/i);
+ });
  it('rejects nonphysical kinematics and zero/negative distances',()=>{
   expect(()=>planRestToRestMotion(0,{maxSpeedMps:1,accelerationMps2:1,decelerationMps2:1})).toThrow();
   expect(()=>planRestToRestMotion(1,{maxSpeedMps:0,accelerationMps2:1,decelerationMps2:1})).toThrow();

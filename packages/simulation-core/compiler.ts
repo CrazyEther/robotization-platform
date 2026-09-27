@@ -14,11 +14,13 @@ function fingerprint(value:unknown):string{
  return 'fnv1a64:'+hash.toString(16).padStart(16,'0');
 }
 function validateReferences(value:z.infer<typeof simulationScenarioSchema>):void{
- const objectIds=new Set<string>(),nodeIds=new Set<string>();
+ const objectIds=new Set<string>(),nodeIds=new Set<string>(),floorIds=new Set<string>(),edgeIds=new Set<string>(),resourceIds=new Set<string>();
  for(const floor of value.facility.floors){
+  if(floorIds.has(floor.id))throw new Error('Floor ids must be unique: '+floor.id);floorIds.add(floor.id);
   for(const object of floor.objects){
    if(objectIds.has(object.id))throw new Error('Facility object ids must be unique: '+object.id);
    objectIds.add(object.id);
+   if(resourceIds.has(object.id))throw new Error('Resource ids must be unique: '+object.id);resourceIds.add(object.id);
    const {x,y,w,h}=object.geometry;
    if(x+w>floor.widthMeters||y+h>floor.heightMeters)
     throw new Error('Facility object geometry exceeds floor bounds: '+object.id);
@@ -31,8 +33,16 @@ function validateReferences(value:z.infer<typeof simulationScenarioSchema>):void
    throw new Error('Process references unknown facility object: '+node.facilityObjectId);
  }
  for(const edge of value.process.edges){
+  if(edgeIds.has(edge.id))throw new Error('Process edge ids must be unique: '+edge.id);edgeIds.add(edge.id);
   if(!nodeIds.has(edge.from)||!nodeIds.has(edge.to))
    throw new Error('Process edge references unknown node: '+edge.id);
+ }
+ for(const robot of value.robots){
+  const ids=[robot.id,...Array.from({length:robot.fleetSize},(_,index)=>robot.id+'#'+(index+1))];
+  for(const resourceId of ids){
+   if(resourceIds.has(resourceId))throw new Error('Resource ids must be unique: '+resourceId);
+   resourceIds.add(resourceId);
+  }
  }
  const maxPayload=Math.max(...value.robots.map(robot=>robot.capacity.payloadKg));
  if(maxPayload<value.workload.unitLoadKg)

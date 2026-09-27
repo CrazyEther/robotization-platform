@@ -85,6 +85,8 @@ export function generateLinearMotionEvents(input:{
  const distance=Math.hypot(dx,dy);
  const profile=planRestToRestMotion(distance,input.kinematics);
  positive(input.samplePeriodSeconds,'samplePeriodSeconds');
+ const estimatedSamples=Math.ceil(profile.totalSeconds/input.samplePeriodSeconds)+1;
+ if(estimatedSamples>100000)throw new RangeError('Motion replay sample limit exceeded');
  if(!Number.isFinite(input.startTimeSeconds)||input.startTimeSeconds<0)throw new RangeError('startTimeSeconds must be finite and >= 0');
  const localTimes:number[]=[0];
  for(let t=input.samplePeriodSeconds;t<profile.totalSeconds-1e-9;t+=input.samplePeriodSeconds)localTimes.push(t);

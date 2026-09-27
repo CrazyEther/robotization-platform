@@ -24,7 +24,11 @@ export type EventTrace=z.infer<typeof eventTraceSchema>;
 export function parseEventTrace(raw:unknown,scenario:SimulationScenarioV2):EventTrace{
  const trace=eventTraceSchema.parse(raw);
  if(trace.scenarioHash!==scenario.scenarioHash)throw new Error('Event trace scenarioHash does not match scenario.');
- const resources=new Set<string>(scenario.robots.map(robot=>robot.id));
+ const resources=new Set<string>();
+ for(const robot of scenario.robots){
+  resources.add(robot.id);
+  for(let index=1;index<=robot.fleetSize;index++)resources.add(robot.id+'#'+index);
+ }
  for(const floor of scenario.facility.floors)for(const object of floor.objects)resources.add(object.id);
  const floors=new Map(scenario.facility.floors.map(floor=>[floor.id,floor] as const));
  const eventIds=new Set<string>();let previous=-1;
