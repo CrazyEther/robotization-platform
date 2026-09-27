@@ -17,6 +17,7 @@ export type ProcessExperiment={
   throughputPerHour:SampleSummary;meanQueueSeconds:SampleSummary;p95CycleSeconds:SampleSummary;
   transportDistanceMeters:SampleSummary;transportEnergyKwh:SampleSummary;transportWaitSeconds:SampleSummary;
   meanTransportWaitSeconds:SampleSummary;trafficWaitSeconds:SampleSummary;robotUtilization:SampleSummary;minRobotSoc:SampleSummary;
+  chargeCount:SampleSummary;chargingSeconds:SampleSummary;chargerWaitSeconds:SampleSummary;chargedEnergyKwh:SampleSummary;
  };
  resources:Record<string,{
   utilization:SampleSummary;availability:SampleSummary;downtimeSeconds:SampleSummary;
@@ -109,6 +110,10 @@ export function runProcessExperiment(
   trafficWaitSeconds:summarizeMetric(runtimeRuns,'trafficWaitSeconds'),
   robotUtilization:summarizeMetric(runtimeRuns,'robotUtilization'),
   minRobotSoc:summarizeMetric(runtimeRuns,'minRobotSoc'),
+  chargeCount:summarizeMetric(runtimeRuns,'chargeCount'),
+  chargingSeconds:summarizeMetric(runtimeRuns,'chargingSeconds'),
+  chargerWaitSeconds:summarizeMetric(runtimeRuns,'chargerWaitSeconds'),
+  chargedEnergyKwh:summarizeMetric(runtimeRuns,'chargedEnergyKwh'),
  };
  const resourceIds=[...new Set(runtimeRuns.flatMap(run=>Object.keys(run.metrics.resourceUtilization)))].sort();
  const resourceMetric=(run:ProcessRun,resourceId:string,key:'resourceUtilization'|'resourceAvailability'|'downtimeSeconds')=>{

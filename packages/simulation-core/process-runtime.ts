@@ -30,6 +30,7 @@ export type ProcessRun={
   resourceAvailability:Record<string,number>;downtimeSeconds:Record<string,number>;
   transportDistanceMeters:number;transportEnergyKwh:number;transportWaitSeconds:number;meanTransportWaitSeconds:number;
   trafficWaitSeconds:number;robotUtilization:number;minRobotSoc:number;
+  chargeCount:number;chargingSeconds:number;chargerWaitSeconds:number;chargedEnergyKwh:number;
  };
  warnings:string[];
 };
@@ -192,9 +193,11 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    dispatchResource(resource,now,schedule);
    return;
   }
-  if(payload.kind==='mobile-transport-complete'){
-   if(!mobileTransport)throw new Error('Transport completion received without mobile transport runtime.');
-   const completedTransport=mobileTransport.complete(payload,now,(at,next)=>schedule({at,priority:0,payload:next}));
+  if(payload.kind==='mobile-transport-complete'||payload.kind==='mobile-charge-arrive'||
+   payload.kind==='mobile-charge-start'||payload.kind==='mobile-charge-done'){
+   if(!mobileTransport)throw new Error('Mobile runtime event received without mobile transport runtime.');
+   const completedTransport=mobileTransport.handle(payload,now,(at,next)=>schedule({at,priority:0,payload:next}));
+   if(!completedTransport)return;
    const task=tasksById.get(completedTransport.taskId);
    const edge=scenario.process.edges.find(item=>item.id===completedTransport.edgeId);
    if(!task||!edge)throw new Error('Transport completion references unknown task or process edge.');
@@ -228,6 +231,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
  ]));
  const transportMetrics=mobileTransport?.metrics()??{
   distanceMeters:0,energyKwh:0,waitSeconds:0,meanWaitSeconds:0,trafficWaitSeconds:0,busySeconds:0,robotUtilization:0,minSocObserved:1,startedRequests:0,
+  chargeCount:0,chargingSeconds:0,chargerWaitSeconds:0,chargedEnergyKwh:0,
  };
  return {
   engine,scenarioHash:scenario.scenarioHash,trace,
@@ -240,6 +244,8 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    transportWaitSeconds:transportMetrics.waitSeconds,meanTransportWaitSeconds:transportMetrics.meanWaitSeconds,
    trafficWaitSeconds:transportMetrics.trafficWaitSeconds,
    robotUtilization:transportMetrics.robotUtilization,minRobotSoc:transportMetrics.minSocObserved,
+   chargeCount:transportMetrics.chargeCount,chargingSeconds:transportMetrics.chargingSeconds,
+   chargerWaitSeconds:transportMetrics.chargerWaitSeconds,chargedEnergyKwh:transportMetrics.chargedEnergyKwh,
   },
   warnings:[
    'simcore-process/3 executes one connected linear process with stochastic service, reliability and optional mobile transport.',
@@ -248,7 +254,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
     'Integrated mobile transport preserves robot position, models empty reposition and uses conservative floor-level traffic reservations.',
     'Integrated mobile transport initializes all robots at the origin of the first compiled transport leg.',
     'Transport distance and energy KPIs include completed transport jobs only; unfinished motion at the horizon remains visible in replay but is excluded from aggregates.',
-    'Integrated mobile transport does not charge robots yet; it fails closed before violating minimum SOC.',
+    'Integrated mobile transport preserves minimum SOC by routing low-energy robots through reachable charger channels before dispatch.',
    ]:[]),
   ],
  };
