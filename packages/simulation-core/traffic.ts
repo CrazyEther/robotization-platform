@@ -15,13 +15,11 @@ export class ReservationTable{
  private readonly byResource=new Map<string,Reservation[]>();
  private count=0;
 
- reserve(request:ReservationRequest):Reservation{
+ private plan(request:ReservationRequest):Reservation{
   if(!request.resourceId.trim()||!request.ownerId.trim())throw new Error('Reservation resourceId and ownerId are required');
   const earliest=finite(request.earliestStart,'earliestStart');
   const duration=finite(request.duration,'duration');
   if(earliest<0||duration<=0)throw new RangeError('Reservation start must be >= 0 and duration > 0');
-  if(this.count>=MAX_RESERVATIONS)throw new RangeError('Reservation table safety limit exceeded');
-
   const existing=this.byResource.get(request.resourceId)??[];
   let start=earliest,end=start+duration;
   for(const reservation of existing){
@@ -30,10 +28,21 @@ export class ReservationTable{
    start=reservation.end;
    end=start+duration;
   }
-  const result:Reservation={
+  return {
    resourceId:request.resourceId,ownerId:request.ownerId,
    start,end,waitSeconds:start-earliest,
   };
+ }
+
+ preview(request:ReservationRequest):Reservation{
+  return {...this.plan(request)};
+ }
+
+ reserve(request:ReservationRequest):Reservation{
+  if(this.count>=MAX_RESERVATIONS)throw new RangeError('Reservation table safety limit exceeded');
+  const result=this.plan(request);
+  const existing=this.byResource.get(request.resourceId)??[];
+  const {start}=result;
   let index=existing.findIndex(item=>start<item.start);
   if(index<0)index=existing.length;
   existing.splice(index,0,result);

@@ -2,7 +2,7 @@ import {describe,expect,it} from 'vitest';
 import {compileScenario} from './compiler';
 import {runTransportFleet} from './fleet';
 
-function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProcess='fixed',seed=42,loadSeconds=10,unloadSeconds=20}:{fleetSize?:number;demandPerHour?:number;shiftHours?:number;arrivalProcess?:'fixed'|'poisson';seed?:number;loadSeconds?:number;unloadSeconds?:number}={}){
+function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProcess='fixed',seed=42,loadSeconds=10,unloadSeconds=20,chargerCapacity=0,batteryCapacityWh=2000,minSoc=.15,chargeW=1000,whPerMeter=.2}:{fleetSize?:number;demandPerHour?:number;shiftHours?:number;arrivalProcess?:'fixed'|'poisson';seed?:number;loadSeconds?:number;unloadSeconds?:number;chargerCapacity?:number;batteryCapacityWh?:number;minSoc?:number;chargeW?:number;whPerMeter?:number}={}){
  return compileScenario({
   schemaVersion:'ris-simulation-scenario/2',id:'fleet',name:'Fleet fixture',
   facility:{schemaVersion:'ris-facility/2',id:'f',name:'F',unit:'m',
@@ -10,6 +10,7 @@ function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProces
    floors:[{id:'floor-1',label:'Floor',zMeters:0,widthMeters:20,heightMeters:12,objects:[
     {id:'a',label:'A',kind:'station',geometry:{x:.9,y:.9,w:.2,h:.2,rotationDeg:0},blocking:false,capacity:1,properties:{}},
     {id:'b',label:'B',kind:'station',geometry:{x:3.9,y:4.9,w:.2,h:.2,rotationDeg:0},blocking:false,capacity:1,properties:{}},
+    ...(chargerCapacity>0?[{id:'charger-1',label:'Charger',kind:'charger' as const,geometry:{x:1.9,y:.9,w:.2,h:.2,rotationDeg:0},blocking:false,capacity:chargerCapacity,properties:{}}]:[]),
    ]}]},
   process:{schemaVersion:'ris-process/1',id:'p',name:'Transport',entityType:'unit',
    nodes:[
@@ -20,7 +21,7 @@ function fixture({fleetSize=2,demandPerHour=360,shiftHours=70/3600,arrivalProces
   robots:[{id:'robot-1',label:'Robot',fleetSize,capacity:{payloadKg:100},
    kinematics:{maxSpeedMps:2,accelerationMps2:1,decelerationMps2:1,turnRadiusM:0},
    dimensions:{lengthM:.2,widthM:.2,heightM:.2},
-   battery:{capacityWh:2000,chargeW:1000,whPerMeter:.2,minSoc:.15},
+   battery:{capacityWh:batteryCapacityWh,chargeW,whPerMeter,minSoc},
    handling:{loadSeconds,unloadSeconds},navigationType:'free-space'}],
   workload:{demandPerHour,unitLoadKg:50,shiftHours,arrivalProcess,seed},
  });
@@ -55,6 +56,23 @@ describe('Transport fleet DES',()=>{
   expect(run.metrics.trafficWaitSeconds).toBeCloseTo(9.5,12);
   expect(run.trace.events.filter(e=>e.type==='traffic.conflict').length).toBeGreaterThan(0);
   expect(run.warnings.join(' ')).toMatch(/exclusive-corridor/i);
+ });
+ it('charges before a task that would violate minimum SOC and records energy KPIs',()=>{
+  const run=runTransportFleet(fixture({fleetSize:1,demandPerHour:3600,shiftHours:40/3600,loadSeconds:0,unloadSeconds:0,chargerCapacity:1,batteryCapacityWh:20,minSoc:.2,chargeW:3600,whPerMeter:1}),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:.5});
+  expect(run.trace.events.filter(e=>e.type==='robot.charging').length).toBeGreaterThanOrEqual(2);
+  expect(run.metrics.chargeCount).toBeGreaterThanOrEqual(1);
+  expect(run.metrics.chargedEnergyKwh).toBeGreaterThan(0);
+  expect(run.metrics.energyConsumedKwh).toBeGreaterThan(0);
+  expect(run.metrics.minSocObserved).toBeGreaterThanOrEqual(.2-1e-12);
+ });
+ it('models charger channel contention and capacity',()=>{
+  const one=runTransportFleet(fixture({fleetSize:2,demandPerHour:7200,shiftHours:60/3600,loadSeconds:0,unloadSeconds:0,chargerCapacity:1,batteryCapacityWh:20,minSoc:.2,chargeW:1800,whPerMeter:1}),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:1});
+  const two=runTransportFleet(fixture({fleetSize:2,demandPerHour:7200,shiftHours:60/3600,loadSeconds:0,unloadSeconds:0,chargerCapacity:2,batteryCapacityWh:20,minSoc:.2,chargeW:1800,whPerMeter:1}),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:1});
+  expect(one.metrics.chargerWaitSeconds).toBeGreaterThan(0);
+  expect(two.metrics.chargerWaitSeconds).toBeLessThan(one.metrics.chargerWaitSeconds);
+ });
+ it('fails closed when a fully charged robot cannot complete a safe cycle',()=>{
+  expect(()=>runTransportFleet(fixture({fleetSize:1,chargerCapacity:1,batteryCapacityWh:10,minSoc:.2,chargeW:3600,whPerMeter:1}),{robotId:'robot-1',safetyClearanceMeters:0,samplePeriodSeconds:1})).toThrow(/battery|energy|cycle/i);
  });
  it('replays Poisson arrivals reproducibly from the scenario seed',()=>{
   const scenario=fixture({fleetSize:2,demandPerHour:10,shiftHours:1,arrivalProcess:'poisson',seed:123});

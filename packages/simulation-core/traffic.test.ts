@@ -17,6 +17,13 @@ describe('Exclusive traffic resource reservations',()=>{
   expect(table.reserve({resourceId:'door:B',ownerId:'R2',earliestStart:1,duration:5}).start).toBe(1);
   expect(table.reserve({resourceId:'door:A',ownerId:'R3',earliestStart:5,duration:2}).start).toBe(5);
  });
+ it('previews earliest availability without mutating the table',()=>{
+  const table=new ReservationTable();
+  table.reserve({resourceId:'charger:1',ownerId:'R1',earliestStart:0,duration:10});
+  const preview=table.preview({resourceId:'charger:1',ownerId:'R2',earliestStart:3,duration:4});
+  expect(preview).toMatchObject({start:10,end:14,waitSeconds:7});
+  expect(table.snapshot()).toHaveLength(1);
+ });
  it('produces a snapshot with no overlap for each resource',()=>{
   const table=new ReservationTable();
   for(let i=0;i<40;i++)table.reserve({
