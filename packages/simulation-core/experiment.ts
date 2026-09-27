@@ -1,6 +1,6 @@
 import type {SimulationScenarioV2} from './contracts';
 import {compileScenario} from './compiler';
-import {runProcessNetwork,type ProcessRun} from './process-runtime';
+import {runProcessNetwork,type ProcessRun,type ProcessRunOptions} from './process-runtime';
 
 export type SampleSummary={
  samples:number;mean:number|null;stddev:number|null;
@@ -15,6 +15,8 @@ export type ProcessExperiment={
  metrics:{
   created:SampleSummary;completed:SampleSummary;backlog:SampleSummary;
   throughputPerHour:SampleSummary;meanQueueSeconds:SampleSummary;p95CycleSeconds:SampleSummary;
+  transportDistanceMeters:SampleSummary;transportEnergyKwh:SampleSummary;transportWaitSeconds:SampleSummary;
+  meanTransportWaitSeconds:SampleSummary;trafficWaitSeconds:SampleSummary;robotUtilization:SampleSummary;minRobotSoc:SampleSummary;
  };
  resources:Record<string,{
   utilization:SampleSummary;availability:SampleSummary;downtimeSeconds:SampleSummary;
@@ -76,7 +78,7 @@ const summarizeMetric=<K extends keyof ProcessRun['metrics']>(
 
 export function runProcessExperiment(
  scenario:SimulationScenarioV2,
- options:{replications:number},
+ options:{replications:number;transport?:ProcessRunOptions['transport']},
 ):ProcessExperiment{
  if(!Number.isInteger(options.replications)||options.replications<1||options.replications>1000)
   throw new RangeError('Experiment replication count must be an integer from 1 to 1000.');
@@ -84,9 +86,10 @@ export function runProcessExperiment(
  if(new Set(seeds).size!==seeds.length)throw new Error('Derived experiment seeds must be unique.');
 
  const compiled=scenario;
+ const runOptions:ProcessRunOptions=options.transport?{transport:options.transport}:{};
  const processRuns=seeds.map(seed=>{
   const runScenario=compileScenario({...compiled,scenarioHash:undefined,workload:{...compiled.workload,seed}});
-  return {seed,scenario:runScenario,run:runProcessNetwork(runScenario)};
+  return {seed,scenario:runScenario,run:runProcessNetwork(runScenario,runOptions)};
  });
  const runs=processRuns.map(({seed,scenario:runScenario,run})=>({
   seed,scenarioHash:runScenario.scenarioHash,engineVersion:run.engine.version,metrics:run.metrics,
@@ -99,6 +102,13 @@ export function runProcessExperiment(
   throughputPerHour:summarizeMetric(runtimeRuns,'throughputPerHour'),
   meanQueueSeconds:summarizeSamples(compact(runtimeRuns.map(run=>run.metrics.meanQueueSeconds))),
   p95CycleSeconds:summarizeSamples(compact(runtimeRuns.map(run=>run.metrics.p95CycleSeconds))),
+  transportDistanceMeters:summarizeMetric(runtimeRuns,'transportDistanceMeters'),
+  transportEnergyKwh:summarizeMetric(runtimeRuns,'transportEnergyKwh'),
+  transportWaitSeconds:summarizeMetric(runtimeRuns,'transportWaitSeconds'),
+  meanTransportWaitSeconds:summarizeMetric(runtimeRuns,'meanTransportWaitSeconds'),
+  trafficWaitSeconds:summarizeMetric(runtimeRuns,'trafficWaitSeconds'),
+  robotUtilization:summarizeMetric(runtimeRuns,'robotUtilization'),
+  minRobotSoc:summarizeMetric(runtimeRuns,'minRobotSoc'),
  };
  const resourceIds=[...new Set(runtimeRuns.flatMap(run=>Object.keys(run.metrics.resourceUtilization)))].sort();
  const resourceMetric=(run:ProcessRun,resourceId:string,key:'resourceUtilization'|'resourceAvailability'|'downtimeSeconds')=>{

@@ -38,7 +38,7 @@ describe('Domain-neutral process runtime',()=>{
   ['airport','assembly'] as const,
  ])('executes %s semantics without sector-specific runtime branches', (profile,kind)=>{
   const run=runProcessNetwork(scenario(profile,kind,5,1));
-  expect(run.engine).toEqual({name:'simcore-process',version:'2'});
+  expect(run.engine).toEqual({name:'simcore-process',version:'3'});
   expect(run.metrics.created).toBe(6);
   expect(run.metrics.completed).toBe(6);
   expect(run.metrics.backlog).toBe(0);

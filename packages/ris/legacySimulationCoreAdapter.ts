@@ -18,9 +18,8 @@ export function compileLegacyScenario(input:SimulationInput):SimulationScenarioV
   process:{schemaVersion:'ris-process/1',id:'process-1',name:'Legacy transport',entityType:'load-unit',
    nodes:[
     {id:'source',label:'Source',kind:'source',facilityObjectId:'pickup',properties:{}},
-    {id:'transport',label:'Transport',kind:'transport',properties:{}},
     {id:'sink',label:'Sink',kind:'sink',facilityObjectId:'dropoff',properties:{}},
-   ],edges:[{id:'e1',from:'source',to:'transport',mode:'flow'},{id:'e2',from:'transport',to:'sink',mode:'transport'}]},
+   ],edges:[{id:'transport-1',from:'source',to:'sink',mode:'transport'}]},
   robots:[{id:'legacy-robot',label:'Legacy mobile robot',fleetSize:input.robot.count,
    capacity:{payloadKg:input.robot.payloadKg},
    kinematics:{maxSpeedMps:input.robot.speedMps,accelerationMps2:1,decelerationMps2:1,turnRadiusM:0},

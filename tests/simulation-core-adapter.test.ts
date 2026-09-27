@@ -34,6 +34,8 @@ describe('Legacy RIS → Simulation Core migration',()=>{
    expect(compiled.robots[0].kinematics.maxSpeedMps).toBe(legacy.robot.speedMps);
    expect(compiled.robots[0].capacity.payloadKg).toBe(legacy.robot.payloadKg);
    expect(compiled.workload.unitLoadKg).toBe(legacy.workload.loadKg);
+   expect(compiled.process.nodes.map(node=>node.kind)).toEqual(['source','sink']);
+   expect(compiled.process.edges).toMatchObject([{from:'source',to:'sink',mode:'transport'}]);
   }
  });
  it('keeps stable golden fingerprints for the four migration templates',()=>{
@@ -41,10 +43,10 @@ describe('Legacy RIS → Simulation Core migration',()=>{
    kind,compileLegacyScenario(createScenario(kind)).scenarioHash
   ]));
   expect(hashes).toEqual({
-   warehouse:'fnv1a64:1508cd2aaf47b2d6',
-   factory:'fnv1a64:c35958d071209681',
-   hospital:'fnv1a64:1fb2b9a7e91b1dab',
-   airport:'fnv1a64:41bdf643b076108e',
+   warehouse:'fnv1a64:1664df55b56fcde0',
+   factory:'fnv1a64:b85232dec88a2507',
+   hospital:'fnv1a64:566978bcf060ef55',
+   airport:'fnv1a64:f3cb44d3adc6adce',
   });
  });
 });
