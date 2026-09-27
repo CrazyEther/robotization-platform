@@ -6,6 +6,15 @@ const positive=finite.positive();
 export const reliabilitySchema=z.object({
  model:z.enum(['fixed','exponential']),mtbfSeconds:positive.max(1e12),mttrSeconds:positive.max(1e12),
 }).strict();
+export const durationModelSchema=z.discriminatedUnion('kind',[
+ z.object({kind:z.literal('fixed'),seconds:finite.min(0).max(1e9)}).strict(),
+ z.object({kind:z.literal('uniform'),minSeconds:finite.min(0).max(1e9),maxSeconds:positive.max(1e9)}).strict()
+  .refine(v=>v.maxSeconds>=v.minSeconds,{message:'maxSeconds must be >= minSeconds'}),
+ z.object({kind:z.literal('exponential'),meanSeconds:positive.max(1e9)}).strict(),
+ z.object({kind:z.literal('lognormal'),medianSeconds:positive.max(1e9),sigma:finite.min(0).max(10)}).strict(),
+ z.object({kind:z.literal('gamma'),shape:positive.max(1e6),scaleSeconds:positive.max(1e9)}).strict(),
+ z.object({kind:z.literal('empirical'),valuesSeconds:z.array(finite.min(0).max(1e9)).min(1).max(10000)}).strict(),
+]);
 const sourceSchema=z.object({
  type:z.enum(['template','manual','json','image','pdf','cad','imported']),
  name:z.string().trim().min(1).max(255).nullable(),
@@ -38,9 +47,12 @@ export const facilitySchema=z.object({
 export const processNodeSchema=z.object({
  id,label:z.string().trim().min(1).max(200),
  kind:z.enum(['source','transport','process','buffer','sink','inspection','assembly','decision']),
- facilityObjectId:id.optional(),durationSeconds:finite.min(0).optional(),
+ facilityObjectId:id.optional(),durationSeconds:finite.min(0).optional(),durationModel:durationModelSchema.optional(),
  properties:z.record(z.string(),z.union([z.string(),finite,z.boolean()])).default({}),
-}).strict();
+}).strict().superRefine((value,ctx)=>{
+ if(value.durationSeconds!==undefined&&value.durationModel!==undefined)
+  ctx.addIssue({code:'custom',message:'Use durationSeconds or durationModel, not both'});
+});
 export const processSchema=z.object({
  schemaVersion:z.literal('ris-process/1'),id,name:z.string().trim().min(1).max(200),
  entityType:z.string().trim().min(1).max(120),

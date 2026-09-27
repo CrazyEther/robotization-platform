@@ -38,7 +38,7 @@ describe('Domain-neutral process runtime',()=>{
   ['airport','assembly'] as const,
  ])('executes %s semantics without sector-specific runtime branches', (profile,kind)=>{
   const run=runProcessNetwork(scenario(profile,kind,5,1));
-  expect(run.engine).toEqual({name:'simcore-process',version:'1'});
+  expect(run.engine).toEqual({name:'simcore-process',version:'2'});
   expect(run.metrics.created).toBe(6);
   expect(run.metrics.completed).toBe(6);
   expect(run.metrics.backlog).toBe(0);
@@ -60,6 +60,31 @@ describe('Domain-neutral process runtime',()=>{
   expect(one.metrics.meanQueueSeconds).not.toBeNull();
   expect(two.metrics.meanQueueSeconds).not.toBeNull();
   expect(two.metrics.meanQueueSeconds!).toBeLessThan(one.metrics.meanQueueSeconds!);
+ });
+
+ it('replays stochastic service durations from the scenario seed',()=>{
+  const base=scenario('hospital','inspection',5,1);
+  const raw=structuredClone(base);
+  delete (raw as Partial<typeof raw>).scenarioHash;
+  const work=raw.process.nodes.find(n=>n.id==='work')!;
+  delete work.durationSeconds;
+  work.durationModel={kind:'empirical',valuesSeconds:[1,4,9,16]};
+  raw.workload.demandPerHour=120;
+  raw.workload.shiftHours=120/3600;
+  raw.workload.seed=77;
+  const a=runProcessNetwork(compileScenario(raw));
+  const b=runProcessNetwork(compileScenario(raw));
+  expect(a.trace.events).toEqual(b.trace.events);
+  const changed=structuredClone(raw);changed.workload.seed=78;
+  const c=runProcessNetwork(compileScenario(changed));
+  expect(c.trace.events).not.toEqual(a.trace.events);
+ });
+ it('rejects ambiguous deterministic and stochastic duration inputs',()=>{
+  const base=scenario('factory','process',5,1);
+  const raw=structuredClone(base);
+  delete (raw as Partial<typeof raw>).scenarioHash;
+  raw.process.nodes.find(n=>n.id==='work')!.durationModel={kind:'fixed',seconds:5};
+  expect(()=>compileScenario(raw)).toThrow(/durationSeconds|durationModel|both/i);
  });
 
  it('pauses processing across MTBF/MTTR downtime and exposes availability evidence',()=>{

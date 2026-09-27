@@ -3,18 +3,20 @@ import {runEventLoop,type DesEvent} from './des';
 import {parseEventTrace,type EventTrace} from './trace';
 import {generateArrivalTimes} from './workload';
 import {generateDowntimeWindows,nextOperationalTime,operationalSeconds,serviceCompletionTime,type DowntimeWindow} from './reliability';
+import {sampleDurationSeconds} from './distribution';
+import {createSeededRandom} from './random';
 
 type ProcessNode=SimulationScenarioV2['process']['nodes'][number];
 type Task={id:string;arrival:number};
 type QueueItem={task:Task;node:ProcessNode;enteredAt:number};
-type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number;downtimes:DowntimeWindow[];wakeAt:number|null};
+type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number;downtimes:DowntimeWindow[];wakeAt:number|null;random:()=>number};
 type Payload=
  | {kind:'arrival';task:Task}
  | {kind:'wake';resourceId:string}
  | {kind:'complete';task:Task;node:ProcessNode;resourceId:string};
 
 export type ProcessRun={
- engine:{name:'simcore-process';version:'1'};
+ engine:{name:'simcore-process';version:'2'};
  scenarioHash:string;trace:EventTrace;
  metrics:{
   created:number;completed:number;backlog:number;
@@ -66,10 +68,18 @@ function linearOrder(scenario:SimulationScenarioV2):ProcessNode[]{
   throw new Error('Process Runtime v1 requires one connected linear process.');
  return order;
 }
-function nodeDuration(node:ProcessNode):number{
- if(node.kind==='source'||node.kind==='sink'||node.kind==='buffer'||node.kind==='decision')return node.durationSeconds??0;
- if(node.durationSeconds===undefined)throw new Error('Process node requires durationSeconds: '+node.id);
- return node.durationSeconds;
+function nodeHasService(node:ProcessNode):boolean{
+ if(node.kind==='source'||node.kind==='sink')return false;
+ if(node.durationModel!==undefined)return true;
+ if(node.durationSeconds!==undefined)return node.durationSeconds>0;
+ if(node.kind==='buffer'||node.kind==='decision')return false;
+ throw new Error('Process node requires durationSeconds or durationModel: '+node.id);
+}
+function sampleNodeDuration(node:ProcessNode,random:()=>number):number{
+ if(node.durationModel!==undefined)return sampleDurationSeconds(node.durationModel,random);
+ if(node.durationSeconds!==undefined)return node.durationSeconds;
+ if(node.kind==='buffer'||node.kind==='decision')return 0;
+ throw new Error('Process node requires durationSeconds or durationModel: '+node.id);
 }
 
 export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
@@ -85,12 +95,12 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
  const horizon=scenario.workload.shiftHours*3600;
  const resources=new Map<string,ResourceState>();
  for(const node of order){
-  const duration=nodeDuration(node);
-  if(node.kind==='source'||node.kind==='sink'||duration<=0)continue;
+  if(!nodeHasService(node))continue;
   const {key,capacity,reliability}=resourceFor(node),existing=resources.get(key);
   if(existing&&existing.capacity!==capacity)throw new Error('Shared process resource has inconsistent capacity: '+key);
   if(!existing)resources.set(key,{id:key,capacity,busy:0,queue:[],busySeconds:0,
-   downtimes:reliability?generateDowntimeWindows(reliability,horizon,seedForResource(scenario.workload.seed,key)):[],wakeAt:null});
+   downtimes:reliability?generateDowntimeWindows(reliability,horizon,seedForResource(scenario.workload.seed,key+'|reliability')):[],
+   wakeAt:null,random:createSeededRandom(seedForResource(scenario.workload.seed,key+'|service'))});
  }
  const arrivals=generateArrivalTimes(scenario.workload,horizon,MAX_TASKS);
  const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival}));
@@ -108,8 +118,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
    enter(task,nextNode(node),now,schedule);return;
   }
   if(node.kind==='sink'){finishTask(task,now);return;}
-  const duration=nodeDuration(node);
-  if(duration<=0){enter(task,nextNode(node),now,schedule);return;}
+  if(!nodeHasService(node)){enter(task,nextNode(node),now,schedule);return;}
   const {key}=resourceFor(node),resource=resources.get(key)!;
   resource.queue.push({task,node,enteredAt:now});
   dispatchResource(resource,now,schedule);
@@ -124,7 +133,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
     }
     break;
    }
-   const item=resource.queue.shift()!,duration=nodeDuration(item.node),wait=now-item.enteredAt;
+   const item=resource.queue.shift()!,duration=sampleNodeDuration(item.node,resource.random),wait=now-item.enteredAt;
    const completion=serviceCompletionTime(now,duration,resource.downtimes);
    resource.busy++;queueWaits.push(wait);
    resource.busySeconds+=Math.min(duration,operationalSeconds(now,Math.min(horizon,completion),resource.downtimes));
@@ -166,7 +175,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
   dispatchResource(resource,now,schedule);
   enter(payload.task,nextNode(payload.node),now,schedule);
  });
- const engine={name:'simcore-process' as const,version:'1' as const};
+ const engine={name:'simcore-process' as const,version:'2' as const};
  const trace=parseEventTrace({
   schemaVersion:'ris-event-trace/1',scenarioHash:scenario.scenarioHash,engine,
   startedAt:'1970-01-01T00:00:00.000Z',
@@ -190,7 +199,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2):ProcessRun{
    p95CycleSeconds:percentile95(cycles),resourceUtilization,resourceAvailability,downtimeSeconds,
   },
   warnings:[
-   'simcore-process/1 executes one connected linear process with deterministic node durations, FCFS resources and reproducible MTBF/MTTR downtime.',
+   'simcore-process/2 executes one connected linear process with deterministic or stochastic service times, FCFS resources and reproducible MTBF/MTTR downtime.',
    'Branching, rework loops, finite buffer occupancy and coupling to mobile transport are intentionally fail-closed in this version.',
   ],
  };
