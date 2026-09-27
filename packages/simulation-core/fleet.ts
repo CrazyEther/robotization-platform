@@ -5,6 +5,7 @@ import {planScenarioRoute,type NavigationRoute} from './navigation';
 import {parseEventTrace,type EventTrace} from './trace';
 import {ReservationTable,type Reservation} from './traffic';
 import {chargeDurationSeconds,motionEnergyWh} from './energy';
+import {generateArrivalTimes} from './workload';
 
 type Task={id:string;arrival:number};
 type RobotState={id:string;busy:boolean;busyStartedAt:number|null;energyWh:number};
@@ -63,31 +64,6 @@ function percentile95(values:number[]):number|null{
  const sorted=[...values].sort((a,b)=>a-b);
  return sorted[Math.max(0,Math.ceil(.95*sorted.length)-1)];
 }
-function mulberry32(seed:number){
- let state=seed>>>0;
- return ()=>{state=(state+0x6D2B79F5)>>>0;let t=state;t=Math.imul(t^(t>>>15),t|1);
-  t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};
-}
-function arrivals(scenario:SimulationScenarioV2,horizon:number):number[]{
- const rate=scenario.workload.demandPerHour/3600;
- const result:number[]=[];
- if(scenario.workload.arrivalProcess==='fixed'){
-  const interval=1/rate;
-  for(let t=0;t<horizon-EPS;t+=interval){
-   result.push(t);if(result.length>MAX_TASKS)throw new RangeError('Transport runner task limit exceeded');
-  }
-  return result;
- }
- const random=mulberry32(scenario.workload.seed);let t=0;
- while(true){
-  const u=Math.max(Number.MIN_VALUE,1-random());
-  t+=-Math.log(u)/rate;
-  if(t>=horizon-EPS)break;
-  result.push(t);if(result.length>MAX_TASKS)throw new RangeError('Transport runner task limit exceeded');
- }
- return result;
-}
-
 export function runTransportFleet(
  scenario:SimulationScenarioV2,
  options:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number},
@@ -132,7 +108,7 @@ export function runTransportFleet(
  if(requiredFullEnergyWh>robotSpec.battery.capacityWh+EPS)
   throw new Error('Battery capacity cannot support one safe transport cycle and charger access while preserving minimum SOC.');
  const horizon=scenario.workload.shiftHours*3600;
- const taskArrivals=arrivals(scenario,horizon);
+ const taskArrivals=generateArrivalTimes(scenario.workload,horizon,MAX_TASKS);
  const tasks=taskArrivals.map((arrival,index):Task=>({id:'T'+(index+1),arrival}));
  const robots=Array.from({length:robotSpec.fleetSize},(_,index):RobotState=>({
   id:robotSpec.id+'#'+(index+1),busy:false,busyStartedAt:null,energyWh:robotSpec.battery.capacityWh,

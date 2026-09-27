@@ -7,5 +7,6 @@ export {generateLinearMotionEvents,planRestToRestMotion,sampleMotion,type Motion
 export {conservativeFootprintRadius,planScenarioRoute,planVisibilityRoute,type NavigationRoute,type Point2D,type RectObstacle} from './navigation';
 export {runReferenceTransport,type ReferenceRun} from './runner';
 export {runTransportFleet,type FleetRun} from './fleet';
+export {runProcessNetwork,type ProcessRun} from './process-runtime';
 export {assessCycleEnergy,chargeDurationSeconds,motionEnergyWh,type BatteryParameters,type CycleEnergyAssessment} from './energy';
 export {eventTraceSchema,parseEventTrace,type EventTrace} from './trace';
