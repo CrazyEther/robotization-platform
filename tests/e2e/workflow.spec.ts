@@ -42,6 +42,8 @@ test('AnyLogic evidence: scene → package → verified replay → ROI → expor
  await openTwin(page);
  await expect(page.getByText(/Simulation Core v2 · fnv1a64:/)).toBeVisible();
  await expect(page.getByRole('button',{name:/Экспорт Simulation Core v2/})).toBeVisible();
+ await expect(page.getByTestId('simcore-reference-route')).toBeVisible();
+ await expect(page.locator('.dt-engine')).toContainText('native-visibility/1');
  await expect(page.locator('.dt-kpis')).toContainText('KPI отсутствуют');
  await expect(page.locator('.dt-investment')).toContainText('Заблокирован');
  const {evidence}=await loadMatchingAnyLogicEvidence(page);
@@ -57,8 +59,10 @@ test('AnyLogic evidence: scene → package → verified replay → ROI → expor
  const receipt=await download;
  const project=JSON.parse(await readFile(await receipt.path(),'utf8'));
  expect(project.kind).toBe('ris-digital-twin-project');
- expect(project.version).toBe(7);
+ expect(project.version).toBe(8);
  expect(project.simulationCoreScenario.schemaVersion).toBe('ris-simulation-scenario/2');
+ expect(project.referenceRun.engine).toEqual({name:'simcore-reference',version:'1'});
+ expect(project.referenceRun.trace.schemaVersion).toBe('ris-event-trace/1');
  expect(project.simulationCoreScenario.scenarioHash).toMatch(/^fnv1a64:/);
  expect(project.evidence.engine).toBe('AnyLogic');
  expect(project.evidence.robot.runId).toBe(evidence.robot.runId);
