@@ -10,6 +10,8 @@ import * as domain from '../../packages/domain/index';
 import {assessCandidates} from '../../packages/catalog/matching';
 import {buildKnowledgeGraph} from '../../packages/catalog/knowledge';
 import {AnyLogicCloud,cloudRequestSchema} from '../../packages/ris/cloud';
+import {runSimulationCoreStudy,simulationStudyLimits,simulationStudyRequestSchema} from '../../packages/ris/simulationCoreStudy';
+import {toSimulationCoreStudyDto} from '../../packages/ris/simulationCoreStudyClient';
 
 export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; PUBLIC_PREVIEW_MODE?:string; ANYLOGIC_API_KEY?:string;ANYLOGIC_MODEL_ID?:string;ANYLOGIC_VERSION_ID?:string;ANYLOGIC_CLOUD_ORIGIN?:string;ANYLOGIC_WORKSPACE_TOKEN?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
 type Variables = { db:SupabaseClient; userId:string };
@@ -20,7 +22,7 @@ const app=new Hono<{Bindings:Bindings;Variables:Variables}>();
 app.use('*',secureHeaders({referrerPolicy:'no-referrer',xFrameOptions:'DENY',contentSecurityPolicy:{defaultSrc:["'self'"],scriptSrc:["'self'","'wasm-unsafe-eval'"],styleSrc:["'self'","'unsafe-inline'"],imgSrc:["'self'",'data:'],connectSrc:["'self'",'https://*.supabase.co'],objectSrc:["'none'"],baseUri:["'self'"],frameAncestors:["'none'"]}}));
 app.use('/api/*',bodyLimit({maxSize:2*1024*1024,onError:c=>c.json({error:'Размер запроса превышает 2 МБ'},413)}));
 app.use('/api/*',async(c,next)=>{c.header('Cache-Control','no-store');const origin=c.req.header('Origin');const target=new URL(c.req.url);const local=['127.0.0.1','localhost'].includes(target.hostname)&&['http://127.0.0.1:5173','http://localhost:5173'].includes(origin??'');if(origin&&origin!==target.origin&&!local)return c.json({error:'Origin не разрешён'},403);await next();});
-app.use('/api/*',async(c,next)=>{if(c.env?.PUBLIC_PREVIEW_MODE==='true'){const allowed=c.req.method==='GET'&&['/api/v1/health','/api/v1/config','/api/v1/catalog'].includes(c.req.path);if(!allowed)return c.json({error:'Публичный предпросмотр: доступно только чтение справочного каталога. Симуляция, финансы и учётные записи пока не подключены.',code:'PREVIEW_READ_ONLY'},503);}await next();});
+app.use('/api/*',async(c,next)=>{if(c.env?.PUBLIC_PREVIEW_MODE==='true'){const allowed=c.req.method==='GET'&&['/api/v1/health','/api/v1/config','/api/v1/catalog','/api/v1/simulation-core/status'].includes(c.req.path);if(!allowed)return c.json({error:'Публичный предпросмотр: доступно только чтение справочного каталога. Симуляция, финансы и учётные записи пока не подключены.',code:'PREVIEW_READ_ONLY'},503);}await next();});
 app.onError((_error,c)=>c.json({error:'Не удалось выполнить запрос'},500));
 const json=async(request:Request):Promise<unknown>=>{try{return await request.json();}catch{return null;}};
 const unavailable={error:'Кабинеты ещё не подключены: необходима настройка Supabase и Google OAuth',code:'AUTH_NOT_CONFIGURED'};
@@ -31,6 +33,17 @@ app.get('/api/v1/ris/cloud/status',c=>{
  const configured=Boolean(env.ANYLOGIC_API_KEY&&env.ANYLOGIC_MODEL_ID&&env.ANYLOGIC_VERSION_ID&&env.ANYLOGIC_WORKSPACE_TOKEN);
  return c.json({configured,engine:'AnyLogic Cloud REST 8.5.0',modelId:configured?env.ANYLOGIC_MODEL_ID:null,versionId:configured?env.ANYLOGIC_VERSION_ID:null,
   note:configured?'Параметры подключения заполнены. Для подтверждения требуется проверить опубликованную модель RIS.':'AnyLogic Cloud не подключён: требуется API-ключ, идентификаторы модели/версии и ключ локального рабочего пространства.'});
+});
+app.get('/api/v1/simulation-core/status',c=>c.json({
+ engine:'Simulation Core v2',version:'simcore-process/4',studyVersion:'ris-simulation-study/1',
+ capabilities:['facility-model','process-graphs','branching','rework','continuous-routing','kinematics','des','reliability','stochastic-service','multi-robot-transport','traffic-reservations','energy','charging','monte-carlo','confidence-intervals'],
+ limits:{maxReplications:simulationStudyLimits.maxReplications,maxStudyTaskExecutions:simulationStudyLimits.maxTasks,maxCyclicTransitionsPerTask:simulationStudyLimits.maxCyclicTransitionsPerTask,maxStudyTransitions:simulationStudyLimits.maxTransitions,maxRequestBytes:2*1024*1024},
+}));
+app.post('/api/v1/simulation-core/study',async c=>{
+ const parsed=simulationStudyRequestSchema.safeParse(await json(c.req.raw));
+ if(!parsed.success)return c.json({error:'Некорректный Simulation Core study',details:parsed.error.issues},422);
+ try{return c.json(toSimulationCoreStudyDto(runSimulationCoreStudy(parsed.data)));}
+ catch(error){return c.json({error:error instanceof Error?error.message:'Simulation Core study failed',code:'SIMULATION_STUDY_INVALID'},422);}
 });
 const cloudAccess=(c:Context<{Bindings:Bindings;Variables:Variables}>)=>{
  const env=c.env??{};
