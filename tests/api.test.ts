@@ -107,6 +107,9 @@ describe('Simulation Core study API',()=>{
   expect(response.status).toBe(200);
   const body=await response.json() as unknown as {engine:string;capabilities:string[]};
   expect(body.engine).toBe('Simulation Core v2');
+  expect((body as unknown as {version:string}).version).toBe('simcore-process/4');
+  expect(body.capabilities).toContain('process-graphs');
+  expect(body.capabilities).toContain('rework');
   expect(body.capabilities).toContain('monte-carlo');
   expect(body.capabilities).toContain('charging');
  });

@@ -35,8 +35,8 @@ app.get('/api/v1/ris/cloud/status',c=>{
   note:configured?'Параметры подключения заполнены. Для подтверждения требуется проверить опубликованную модель RIS.':'AnyLogic Cloud не подключён: требуется API-ключ, идентификаторы модели/версии и ключ локального рабочего пространства.'});
 });
 app.get('/api/v1/simulation-core/status',c=>c.json({
- engine:'Simulation Core v2',version:'simcore-process/3',studyVersion:'ris-simulation-study/1',
- capabilities:['facility-model','continuous-routing','kinematics','des','reliability','stochastic-service','multi-robot-transport','traffic-reservations','energy','charging','monte-carlo','confidence-intervals'],
+ engine:'Simulation Core v2',version:'simcore-process/4',studyVersion:'ris-simulation-study/1',
+ capabilities:['facility-model','process-graphs','branching','rework','continuous-routing','kinematics','des','reliability','stochastic-service','multi-robot-transport','traffic-reservations','energy','charging','monte-carlo','confidence-intervals'],
  limits:{maxReplications:simulationStudyLimits.maxReplications,maxStudyTaskExecutions:simulationStudyLimits.maxTasks,maxCyclicTransitionsPerTask:simulationStudyLimits.maxCyclicTransitionsPerTask,maxStudyTransitions:simulationStudyLimits.maxTransitions,maxRequestBytes:2*1024*1024},
 }));
 app.post('/api/v1/simulation-core/study',async c=>{
