@@ -58,7 +58,7 @@ export const processSchema=z.object({
  entityType:z.string().trim().min(1).max(120),
  nodes:z.array(processNodeSchema).min(2).max(10000),
  edges:z.array(z.object({
-  id,from:id,to:id,mode:z.enum(['flow','transport']).default('flow'),
+  id,from:id,to:id,mode:z.enum(['flow','transport']).default('flow'),probability:finite.min(0).max(1).optional(),
  }).strict()).min(1).max(20000),
 }).strict();
 export const robotSpecSchema=z.object({

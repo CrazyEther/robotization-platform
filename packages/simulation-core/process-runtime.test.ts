@@ -111,9 +111,9 @@ describe('Domain-neutral process runtime',()=>{
   const branch=structuredClone(base);
   branch.process.nodes.push({id:'other',label:'Other',kind:'sink',facilityObjectId:'end-station',properties:{}});
   branch.process.edges.push({id:'e3',from:'source',to:'other',mode:'flow'});
-  expect(()=>runProcessNetwork(compileScenario(branch))).toThrow(/linear|branch/i);
+  expect(()=>runProcessNetwork(compileScenario(branch))).toThrow(/source|branch|outgoing/i);
   const cycle=structuredClone(base);
   cycle.process.edges[1]={id:'e2',from:'work',to:'source',mode:'flow'};
-  expect(()=>runProcessNetwork(compileScenario(cycle))).toThrow(/linear|cycle|branch/i);
+  expect(()=>runProcessNetwork(compileScenario(cycle))).toThrow(/source|cycle|incoming/i);
  });
 });

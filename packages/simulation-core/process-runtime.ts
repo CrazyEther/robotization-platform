@@ -7,9 +7,10 @@ import {sampleDurationSeconds} from './distribution';
 import {createSeededRandom} from './random';
 import {MobileTransportRuntime,type MobileTransportEvent} from './mobile-transport-runtime';
 import type {TransportNetwork} from './transport-network';
+import {compileProcessGraph} from './process-graph';
 
 type ProcessNode=SimulationScenarioV2['process']['nodes'][number];
-type Task={id:string;arrival:number};
+type Task={id:string;arrival:number;transitions:number};
 type QueueItem={task:Task;node:ProcessNode;enteredAt:number};
 type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number;downtimes:DowntimeWindow[];wakeAt:number|null;random:()=>number};
 type Payload=
@@ -20,6 +21,7 @@ type Payload=
 
 export type ProcessRunOptions={
  traceMode?:'full'|'metrics';
+ maxTransitionsPerTask?:number;
  transport?:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number;network?:TransportNetwork};
 };
 export type ProcessRun={
@@ -49,35 +51,6 @@ const seedForResource=(base:number,id:string)=>{
  for(let i=0;i<id.length;i++){hash^=id.charCodeAt(i);hash=Math.imul(hash,16777619)>>>0;}
  return (base^hash)>>>0;
 };
-function linearOrder(scenario:SimulationScenarioV2):ProcessNode[]{
- const nodes=new Map(scenario.process.nodes.map(node=>[node.id,node] as const));
- const sources=scenario.process.nodes.filter(node=>node.kind==='source');
- const sinks=scenario.process.nodes.filter(node=>node.kind==='sink');
- if(sources.length!==1||sinks.length!==1)throw new Error('Process Runtime v1 requires one linear source and one linear sink.');
- const outgoing=new Map<string,string[]>(),incoming=new Map<string,string[]>();
- for(const node of scenario.process.nodes){outgoing.set(node.id,[]);incoming.set(node.id,[]);}
- for(const edge of scenario.process.edges){outgoing.get(edge.from)!.push(edge.to);incoming.get(edge.to)!.push(edge.from);}
- for(const node of scenario.process.nodes){
-  const out=outgoing.get(node.id)!,inc=incoming.get(node.id)!;
-  if(node.kind==='source'){
-   if(inc.length!==0||out.length!==1)throw new Error('Process Runtime v1 rejects branching: source must have one outgoing edge.');
-  }else if(node.kind==='sink'){
-   if(inc.length!==1||out.length!==0)throw new Error('Process Runtime v1 requires a terminal linear sink.');
-  }else if(inc.length!==1||out.length!==1){
-   throw new Error('Process Runtime v1 rejects branching and disconnected nodes.');
-  }
- }
- const order:ProcessNode[]=[];const seen=new Set<string>();let current=sources[0];
- while(true){
-  if(seen.has(current.id))throw new Error('Process Runtime v1 rejects process cycles.');
-  seen.add(current.id);order.push(current);
-  if(current.kind==='sink')break;
-  current=nodes.get(outgoing.get(current.id)![0])!;
- }
- if(order.length!==scenario.process.nodes.length||order.at(-1)?.id!==sinks[0].id)
-  throw new Error('Process Runtime v1 requires one connected linear process.');
- return order;
-}
 function nodeHasService(node:ProcessNode):boolean{
  if(node.kind==='source'||node.kind==='sink')return false;
  if(node.durationModel!==undefined)return true;
@@ -94,9 +67,11 @@ function sampleNodeDuration(node:ProcessNode,random:()=>number):number{
 
 export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessRunOptions={}):ProcessRun{
  const traceEnabled=options.traceMode!=='metrics';
- const order=linearOrder(scenario);
- const nodesById=new Map(order.map(node=>[node.id,node] as const));
- const edgeByFrom=new Map(scenario.process.edges.map(edge=>[edge.from,edge] as const));
+ const graph=compileProcessGraph(scenario),nodesById=graph.nodesById;
+ const maxTransitions=options.maxTransitionsPerTask??10_000;
+ if(!Number.isInteger(maxTransitions)||maxTransitions<1||maxTransitions>1_000_000)
+  throw new RangeError('maxTransitionsPerTask must be an integer from 1 to 1000000.');
+ const decisionRandom=createSeededRandom(seedForResource(scenario.workload.seed,'process-routing'));
  const transportEdges=scenario.process.edges.filter(edge=>edge.mode==='transport');
  if(transportEdges.length&&!options.transport)
   throw new Error('Process contains transport edges but no mobile transport adapter/options are configured.');
@@ -110,7 +85,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
  };
  const horizon=scenario.workload.shiftHours*3600;
  const resources=new Map<string,ResourceState>();
- for(const node of order){
+ for(const node of scenario.process.nodes){
   if(!nodeHasService(node))continue;
   const {key,capacity,reliability}=resourceFor(node),existing=resources.get(key);
   if(existing&&existing.capacity!==capacity)throw new Error('Shared process resource has inconsistent capacity: '+key);
@@ -119,12 +94,12 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    wakeAt:null,random:createSeededRandom(seedForResource(scenario.workload.seed,key+'|service'))});
  }
  const arrivals=generateArrivalTimes(scenario.workload,horizon,MAX_TASKS);
- const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival}));
+ const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival,transitions:0}));
  const tasksById=new Map(tasks.map(task=>[task.id,task] as const));
  let created=0,completed=0,traceOrder=0;
  const queueWaits:number[]=[],cycles:number[]=[];
- const raw:{event:Record<string,unknown>;order:number}[]=[];
- const push=(event:Record<string,unknown>)=>{if(traceEnabled)raw.push({event,order:traceOrder++});};
+ const raw:{event:Record<string,unknown>;order:number}[]=[],eventIdCounts=new Map<string,number>();
+ const push=(event:Record<string,unknown>)=>{if(!traceEnabled)return;const base=String(event.id),count=eventIdCounts.get(base)??0;eventIdCounts.set(base,count+1);raw.push({event:count?{...event,id:base+'#'+count}:event,order:traceOrder++});};
  const mobileTransport=transportEdges.length
   ?new MobileTransportRuntime(scenario,{...options.transport!,emitMotion:traceEnabled},horizon,push)
   :null;
@@ -133,7 +108,9 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   push({id:task.id+'-completed',t:now,type:'task.completed',taskId:task.id});
  };
  function advance(task:Task,node:ProcessNode,now:number,schedule:(event:DesEvent<Payload>)=>void){
-  const edge=edgeByFrom.get(node.id);
+  task.transitions++;
+  if(task.transitions>maxTransitions)throw new Error('Process task exceeded max transitions; probable non-terminating rework loop: '+task.id);
+  const edge=graph.chooseEdge(node,decisionRandom);
   if(!edge)throw new Error('Process node has no outgoing edge: '+node.id);
   const next=nodesById.get(edge.to);
   if(!next)throw new Error('Process edge points to unknown node: '+edge.id);
@@ -187,7 +164,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   if(payload.kind==='arrival'){
    created++;
    push({id:payload.task.id+'-created',t:now,type:'task.created',taskId:payload.task.id});
-   enter(payload.task,order[0],now,schedule);
+   enter(payload.task,graph.source,now,schedule);
    return;
   }
   if(payload.kind==='wake'){
