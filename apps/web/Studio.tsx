@@ -65,7 +65,7 @@ export default function Studio(){
     <div className="ris-market-grid">{filtered.map(p=><article key={p.id} className={'ris-robot '+(selected===p.id?'selected':'')}><div className="ris-robot-top"><span>{p.familyId.toUpperCase()}</span><span>{p.vendor}</span></div><div className="ris-robot-image"><Box size={53} strokeWidth={1.1}/></div><h3>{p.name}</h3><p>{p.summary}</p><div className="ris-specs">{p.characteristics.slice(0,3).map(c=><div key={c.key}><span>{c.label}</span><strong>{String(c.value)} {c.unit}</strong></div>)}{!p.characteristics.length&&<small>Численные характеристики требуют подтверждения.</small>}</div><div className="ris-source-row">{sourceFor(p).slice(0,2).map(src=><a key={src.id} href={src.url} target="_blank" rel="noreferrer">Источник ↗</a>)}</div><button disabled={p.familyId!=='transport'} className="ris-robot-button" onClick={()=>chooseProduct(p)}>{p.familyId==='transport'?(selected===p.id?'Открыть в Digital Twin':'Моделировать этот робот'):'Сценарный адаптер ещё не реализован'} <ArrowUpRight size={17}/></button></article>)}</div>
     <div className="ris-next"><span>{chosen?'Выбрано: '+chosen.name:'Выберите транспортного робота или откройте студию с первым доступным вариантом.'}</span><button className="ris-primary" onClick={()=>setTab('studio')}>Digital Twin Studio <ArrowRight size={19}/></button></div></>}
 
-   {screen==='studio'&&<DigitalTwinStudio key={scenario.sector+'-'+(selected??'default')} initialScenario={scenario} initialRobotId={selected} onScenario={setScenario}/>}
+   {screen==='studio'&&<DigitalTwinStudio key={selected??'default'} initialScenario={scenario} initialRobotId={selected} onScenario={setScenario}/>}
    </main></div>}
  </div>;
 }

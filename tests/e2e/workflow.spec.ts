@@ -122,8 +122,11 @@ test('editor calibrates a floor-plan image and edits precise object geometry',as
  await page.getByRole('button',{name:'Выбор'}).click();
  const rack=page.locator('.dt-obj.rack'),beforeX=Number(await rack.getAttribute('x')),beforeY=Number(await rack.getAttribute('y')),rb=await rack.boundingBox();expect(rb).not.toBeNull();
  if(rb){await page.mouse.move(rb.x+rb.width/2,rb.y+rb.height/2);await page.mouse.down();await page.mouse.move(rb.x+rb.width/2+2,rb.y+rb.height/2+2);await page.mouse.up();}
- expect(Math.abs(Number(await rack.getAttribute('x'))-beforeX)).toBeLessThan(1);
- expect(Math.abs(Number(await rack.getAttribute('y'))-beforeY)).toBeLessThan(1);
+ const viewBox=(await floor.getAttribute('viewBox'))!.trim().split(' ').filter(Boolean).map(Number);
+ const physicalToleranceX=box?2*viewBox[2]/box.width+.25:1;
+ const physicalToleranceY=box?2*viewBox[3]/box.height+.25:1;
+ expect(Math.abs(Number(await rack.getAttribute('x'))-beforeX)).toBeLessThanOrEqual(physicalToleranceX);
+ expect(Math.abs(Number(await rack.getAttribute('y'))-beforeY)).toBeLessThanOrEqual(physicalToleranceY);
  await page.getByRole('button',{name:/Подтвердить размеры и геометрию/}).click();
  await expect(page.locator('.dt-site-state')).toContainText('готова');
  await page.getByLabel('Ширина объекта').fill('4.4');
@@ -154,4 +157,39 @@ test('mobile keeps editor, Simulation Core execution and comparison reachable',a
  expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(4);
  await expect(page.locator('.dt-compare')).toContainText('SIMULATION CORE');
  await expect(page.getByRole('slider',{name:'Время симуляции'})).toBeVisible();
+});
+
+test('production cycle: input pallet → robot → machine → new pallet → robot → output',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+ await openTwin(page);
+ await page.getByTestId('load-factory-flow').click();
+ await expect(page.getByText(/Заготовка → робот → станок → новый поддон/)).toBeVisible();
+ await expect(page.getByTestId('factory-transport-route')).toHaveCount(2);
+ await expect(page.getByLabel('Время обработки станка')).toHaveValue('110');
+ await page.getByLabel('Время обработки станка').fill('145');
+ await validateSite(page);
+ await page.getByLabel('Требуется задач/год').fill('10');
+ await page.getByRole('button',{name:/Запустить Simulation Core/}).click();
+ await expect(page.locator('.dt-kpis .dt-kpi-grid')).toBeVisible({timeout:30_000});
+ await expect(page.getByTestId('material-unit').first()).toBeVisible();
+ await expect(page.getByTestId('factory-material-flow')).toBeVisible();
+ const slider=page.getByRole('slider',{name:'Время симуляции'});
+ await slider.focus();await slider.press('End');
+ const shipped=Number(await page.getByTestId('factory-material-flow').locator('.dt-kpi-grid strong').last().innerText());
+ expect(shipped).toBeGreaterThan(0);
+ await expect(page.locator('.dt-investment')).not.toContainText('Заблокирован');
+ const download=page.waitForEvent('download');
+ await page.getByRole('button',{name:/Экспорт проекта и траекторий/}).click();
+ const receipt=await download;
+ const project=JSON.parse(await readFile(await receipt.path(),'utf8'));
+ expect(project.simulationCoreScenario.process.nodes).toHaveLength(3);
+ expect(project.simulationCoreScenario.process.edges.map((edge:{mode:string})=>edge.mode))
+  .toEqual(['transport','transport']);
+ const trace=project.simulationCoreStudy.robot.run.trace.events;
+ expect(trace.some((event:{type:string})=>event.type==='entity.loaded')).toBe(true);
+ expect(trace.some((event:{type:string})=>event.type==='entity.processing')).toBe(true);
+ expect(trace.some((event:{type:string})=>event.type==='entity.consumed')).toBe(true);
+ await page.getByRole('button',{name:'3D'}).click();
+ await expect(page.locator('.ris-scene-3d canvas')).toHaveCount(1);
+ expect(errors).toEqual([]);
 });

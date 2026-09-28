@@ -10,7 +10,7 @@ import type {TransportNetwork} from './transport-network';
 import {compileProcessGraph} from './process-graph';
 
 type ProcessNode=SimulationScenarioV2['process']['nodes'][number];
-type Task={id:string;arrival:number;transitions:number};
+type Task={id:string;arrival:number;transitions:number;unitId:string;unitStage:number};
 type QueueItem={task:Task;node:ProcessNode;enteredAt:number};
 type ResourceState={id:string;capacity:number;busy:number;queue:QueueItem[];busySeconds:number;downtimes:DowntimeWindow[];wakeAt:number|null;random:()=>number};
 type Payload=
@@ -78,6 +78,15 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
  if(transportEdges.length&&!options.transport)
   throw new Error('Process contains transport edges but no mobile transport adapter/options are configured.');
  const objectMap=new Map(scenario.facility.floors.flatMap(floor=>floor.objects.map(object=>[object.id,object] as const)));
+ const physicalPosition=(objectId:string|undefined)=>{
+  if(!objectId)return undefined;
+  for(const floor of scenario.facility.floors){
+   const object=floor.objects.find(item=>item.id===objectId);
+   if(object)return {floorId:floor.id,x:object.geometry.x+object.geometry.w/2,
+    y:object.geometry.y+object.geometry.h/2};
+  }
+  return undefined;
+ };
  const resourceFor=(node:ProcessNode)=>{
   const key=node.facilityObjectId??'process-node:'+node.id;
   const object=node.facilityObjectId?objectMap.get(node.facilityObjectId):undefined;
@@ -96,7 +105,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    wakeAt:null,random:createSeededRandom(seedForResource(scenario.workload.seed,key+'|service'))});
  }
  const arrivals=generateArrivalTimes(scenario.workload,horizon,MAX_TASKS);
- const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival,transitions:0}));
+ const tasks=arrivals.map((arrival,index):Task=>({id:'P'+(index+1),arrival,transitions:0,unitId:'P'+(index+1)+'-unit-0',unitStage:0}));
  const tasksById=new Map(tasks.map(task=>[task.id,task] as const));
  let created=0,completed=0,traceOrder=0;
  const queueWaits:number[]=[],cycles:number[]=[];
@@ -105,8 +114,11 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
  const mobileTransport=transportEdges.length
   ?new MobileTransportRuntime(scenario,{...options.transport!,emitMotion:traceEnabled},horizon,push)
   :null;
- const finishTask=(task:Task,now:number)=>{
+ const finishTask=(task:Task,now:number,sink:ProcessNode)=>{
   completed++;cycles.push(now-task.arrival);
+  push({id:task.unitId+'-finished',t:now,type:'entity.completed',entityId:task.unitId,
+   taskId:task.id,...(sink?.facilityObjectId?{position:physicalPosition(sink.facilityObjectId)}:{}),
+   data:{locationId:sink?.facilityObjectId??'',entityType:scenario.process.entityType}});
   push({id:task.id+'-completed',t:now,type:'task.completed',taskId:task.id});
  };
  function advance(task:Task,node:ProcessNode,now:number,schedule:(event:DesEvent<Payload>)=>void){
@@ -118,14 +130,14 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   if(!next)throw new Error('Process edge points to unknown node: '+edge.id);
   if(edge.mode==='transport'){
    if(!mobileTransport)throw new Error('Transport edge requires a mobile transport adapter.');
-   mobileTransport.request(task.id,edge.id,now,(at,payload)=>schedule({at,priority:0,payload}));
+   mobileTransport.request(task.id,edge.id,now,(at,payload)=>schedule({at,priority:0,payload}),task.unitId);
    return;
   }
   enter(task,next,now,schedule);
  }
  function enter(task:Task,node:ProcessNode,now:number,schedule:(event:DesEvent<Payload>)=>void){
   if(node.kind==='source'){advance(task,node,now,schedule);return;}
-  if(node.kind==='sink'){finishTask(task,now);return;}
+  if(node.kind==='sink'){finishTask(task,now,node);return;}
   if(!nodeHasService(node)){advance(task,node,now,schedule);return;}
   const {key}=resourceFor(node),resource=resources.get(key)!;
   resource.queue.push({task,node,enteredAt:now});
@@ -145,6 +157,10 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    const completion=serviceCompletionTime(now,duration,resource.downtimes);
    resource.busy++;queueWaits.push(wait);
    resource.busySeconds+=Math.min(duration,operationalSeconds(now,Math.min(horizon,completion),resource.downtimes));
+   push({id:item.task.unitId+'-'+item.node.id+'-processing',t:now,type:'entity.processing',
+    entityId:item.task.unitId,taskId:item.task.id,
+    ...(item.node.facilityObjectId?{position:physicalPosition(item.node.facilityObjectId)}:{}),
+    data:{nodeId:item.node.id,locationId:item.node.facilityObjectId??''}});
    push({id:item.task.id+'-'+item.node.id+'-start',t:now,type:'process.started',taskId:item.task.id,
     ...(item.node.facilityObjectId?{resourceId:item.node.facilityObjectId}:{}),
     data:{nodeId:item.node.id,queueSeconds:wait}});
@@ -166,6 +182,10 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   if(payload.kind==='arrival'){
    created++;
    push({id:payload.task.id+'-created',t:now,type:'task.created',taskId:payload.task.id});
+   push({id:payload.task.unitId+'-created',t:now,type:'entity.created',
+    taskId:payload.task.id,entityId:payload.task.unitId,
+    ...(graph.source.facilityObjectId?{position:physicalPosition(graph.source.facilityObjectId)}:{}),
+    data:{locationId:graph.source.facilityObjectId??'',entityType:scenario.process.entityType,stage:'input'}});
    enter(payload.task,graph.source,now,schedule);
    return;
   }
@@ -193,6 +213,18 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   push({id:payload.task.id+'-'+payload.node.id+'-complete',t:now,type:'process.completed',
    taskId:payload.task.id,...(payload.node.facilityObjectId?{resourceId:payload.node.facilityObjectId}:{}),
    data:{nodeId:payload.node.id}});
+  if(payload.node.properties.transformsLoad===true){
+   const oldUnit=payload.task.unitId;
+   push({id:oldUnit+'-consumed',t:now,type:'entity.consumed',taskId:payload.task.id,
+    entityId:oldUnit,data:{nodeId:payload.node.id}});
+   payload.task.unitStage++;
+   payload.task.unitId=payload.task.id+'-unit-'+payload.task.unitStage;
+   push({id:payload.task.unitId+'-created',t:now,type:'entity.created',
+    entityId:payload.task.unitId,taskId:payload.task.id,
+    ...(payload.node.facilityObjectId?{position:physicalPosition(payload.node.facilityObjectId)}:{}),
+    data:{locationId:payload.node.facilityObjectId??'',
+     entityType:scenario.process.entityType,stage:'output',nodeId:payload.node.id}});
+  }
   dispatchResource(resource,now,schedule);
   advance(payload.task,payload.node,now,schedule);
  });

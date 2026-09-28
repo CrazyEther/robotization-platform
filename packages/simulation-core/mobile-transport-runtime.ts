@@ -7,11 +7,11 @@ import {ReservationTable} from './traffic';
 import {compileTransportNetwork,type TransportLeg,type TransportNetwork} from './transport-network';
 
 export type MobileTransportEvent=
- | {kind:'mobile-transport-complete';taskId:string;edgeId:string;robotId:string;distanceMeters:number;energyWh:number}
+ | {kind:'mobile-transport-complete';taskId:string;entityId:string;edgeId:string;robotId:string;distanceMeters:number;energyWh:number}
  | {kind:'mobile-charge-arrive';sequence:number;robotId:string;chargerId:string;distanceMeters:number;travelEnergyWh:number;slot:ChargingSlot}
  | {kind:'mobile-charge-start';sequence:number;robotId:string;chargerId:string;slot:ChargingSlot}
  | {kind:'mobile-charge-done';sequence:number;robotId:string;chargerId:string;slot:ChargingSlot};
-type Request={taskId:string;edgeId:string;enteredAt:number};
+type Request={taskId:string;entityId:string;edgeId:string;enteredAt:number};
 type RobotState={id:string;busy:boolean;currentObjectId:string;energyWh:number};
 type Emit=(event:Record<string,unknown>)=>void;
 type Schedule=(at:number,payload:MobileTransportEvent)=>void;
@@ -76,9 +76,9 @@ export class MobileTransportRuntime{
   }));
  }
 
- request(taskId:string,edgeId:string,now:number,schedule:Schedule){
+ request(taskId:string,edgeId:string,now:number,schedule:Schedule,entityId:string){
   if(!this.legs.has(edgeId))throw new Error('Unknown compiled transport edge: '+edgeId);
-  this.queue.push({taskId,edgeId,enteredAt:now});
+  this.queue.push({taskId,entityId,edgeId,enteredAt:now});
   this.dispatch(now,schedule);
  }
 
@@ -91,6 +91,10 @@ export class MobileTransportRuntime{
    this.consumeEnergy(robot,event.energyWh);
    robot.currentObjectId=leg.toObjectId;robot.busy=false;
    this.distanceMeters+=event.distanceMeters;
+   this.emit({id:event.entityId+'-'+event.edgeId+'-unloaded',t:now,type:'entity.unloaded',
+    taskId:event.taskId,entityId:event.entityId,resourceId:robot.id,
+    position:{floorId:leg.floorId,x:leg.route.points.at(-1)!.x,y:leg.route.points.at(-1)!.y},
+    data:{edgeId:event.edgeId,locationId:leg.toObjectId}});
    this.emit({id:event.taskId+'-'+event.edgeId+'-transport-complete',t:now,type:'process.completed',
     taskId:event.taskId,resourceId:robot.id,data:{phase:'transport',edgeId:event.edgeId}});
    this.dispatch(now,schedule);
@@ -312,6 +316,11 @@ export class MobileTransportRuntime{
     taskId:request.taskId,resourceId:robot.id,data:{reason:'traffic',waitSeconds:loadedReservation.waitSeconds},
    });
 
+   if(loadedReservation.start<=this.horizon+EPS)this.emit({id:request.entityId+'-'+request.edgeId+'-loaded',t:loadedReservation.start,
+    type:'entity.loaded',taskId:request.taskId,entityId:request.entityId,
+    resourceId:robot.id,position:{floorId:leg.floorId,
+     x:leg.route.points[0].x,y:leg.route.points[0].y},
+    data:{edgeId:request.edgeId,locationId:leg.fromObjectId}});
    this.addMotion(leg.route,loadedReservation.start,leg.floorId,robot.id,
     request.taskId+'-'+request.edgeId+'-'+robot.id+'-loaded',request.taskId,'loaded');
    const completeAt=loadedReservation.end+this.robotSpec.handling.unloadSeconds;
@@ -320,7 +329,7 @@ export class MobileTransportRuntime{
     taskId:request.taskId,resourceId:robot.id,
     data:{phase:'transport',edgeId:request.edgeId,queueSeconds:queueWait}});
    schedule(completeAt,{
-    kind:'mobile-transport-complete',taskId:request.taskId,edgeId:request.edgeId,robotId:robot.id,
+    kind:'mobile-transport-complete',taskId:request.taskId,entityId:request.entityId,edgeId:request.edgeId,robotId:robot.id,
     distanceMeters:totalDistance,energyWh:totalEnergyWh,
    });
   }
