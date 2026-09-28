@@ -1,6 +1,8 @@
 import { describe,it,expect } from 'vitest';
 import app from '../apps/api/app';
 import {createScenario} from '../packages/ris/contracts';
+import {compileLegacyScenario} from '../packages/ris/legacySimulationCoreAdapter';
+import {simulationCoreStudyDtoSchema} from '../packages/ris/simulationCoreStudyClient';
 const post=(path:string,body:unknown)=>app.request(`/api/v1/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 describe('public API rejects insufficient inputs and unsafe access',()=>{
  it('preview static pages are not indexed as a production product',async()=>{
@@ -60,5 +62,39 @@ describe('AnyLogic Cloud local-only compute boundary',()=>{
   const res=await app.request('/api/v1/ris/cloud/run',{method:'POST',headers:{'x-ris-workspace-key':env.ANYLOGIC_WORKSPACE_TOKEN}}, {...env,PUBLIC_PREVIEW_MODE:'true'});
   expect(res.status).toBe(503);
   expect((await res.json() as {code:string}).code).toBe('PREVIEW_READ_ONLY');
+ });
+});
+
+describe('Simulation Core study API',()=>{
+ const baseline={workers:4,speedMps:1.1,serviceSeconds:80};
+ it('runs a canonical study through the worker-compatible API',async()=>{
+  const scenario=compileLegacyScenario(createScenario('hospital'));
+  const response=await post('simulation-core/study',{
+   scenario,robotId:'legacy-robot',baseline,replications:5,safetyClearanceMeters:.2,samplePeriodSeconds:2,
+  });
+  expect(response.status).toBe(200);
+  const body=simulationCoreStudyDtoSchema.parse(await response.json());
+  expect(body.engine).toEqual({name:'ris-simulation-study',version:'1'});
+  expect(body.scenarioHash).toBe(scenario.scenarioHash);
+  expect(body.replications).toBe(5);
+  expect(body.robot.run.trace.schemaVersion).toBe('ris-event-trace/1');
+ });
+ it('rejects malformed or over-budget studies before execution',async()=>{
+  const bad=await post('simulation-core/study',{scenario:{},robotId:'x'});
+  expect(bad.status).toBe(422);
+  const scenario=compileLegacyScenario(createScenario('warehouse'));
+  const tooLarge=await post('simulation-core/study',{
+   scenario:{...scenario,workload:{...scenario.workload,demandPerHour:10000,shiftHours:24}},
+   robotId:'legacy-robot',baseline,replications:30,safetyClearanceMeters:.2,samplePeriodSeconds:1,
+  });
+  expect(tooLarge.status).toBe(422);
+ });
+ it('exposes Simulation Core capability status',async()=>{
+  const response=await app.request('/api/v1/simulation-core/status');
+  expect(response.status).toBe(200);
+  const body=await response.json() as unknown as {engine:string;capabilities:string[]};
+  expect(body.engine).toBe('Simulation Core v2');
+  expect(body.capabilities).toContain('monte-carlo');
+  expect(body.capabilities).toContain('charging');
  });
 });
