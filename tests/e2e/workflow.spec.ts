@@ -85,6 +85,16 @@ test('Simulation Core: scene → study → EventTrace replay → ROI → export'
  expect(errors).toEqual([]);
 });
 
+test('Simulation Core surfaces a platform resource error without leaking HTML/JSON parser noise',async({page})=>{
+ await openTwin(page);await validateSite(page);
+ await page.route('**/api/v1/simulation-core/study',route=>route.fulfill({
+  status:503,contentType:'text/html',body:'<!DOCTYPE html><html><body>Worker exceeded resource limits</body></html>',
+ }));
+ await page.getByRole('button',{name:/Запустить Simulation Core/}).click();
+ await expect(page.getByRole('alert')).toContainText('вычислительный лимит');
+ await expect(page.getByRole('alert')).not.toContainText('Unexpected token');
+});
+
 test('AnyLogic validation attaches to the current scenario and invalidates on model change',async({page})=>{
  await openTwin(page);
  await loadMatchingAnyLogicEvidence(page);

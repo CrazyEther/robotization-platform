@@ -62,6 +62,14 @@ describe('Integrated process and mobile transport',()=>{
   const horizon=input.workload.shiftHours*3600;
   expect(run.trace.events.every(event=>event.t<=horizon+1e-9)).toBe(true);
  });
+ it('keeps metrics identical when experiment runs suppress replay traces',()=>{
+  const input=scenario('factory',2,900);
+  const full=runProcessNetwork(input,options);
+  const metricsOnly=runProcessNetwork(input,{...options,traceMode:'metrics'});
+  expect(metricsOnly.metrics).toEqual(full.metrics);
+  expect(metricsOnly.trace.events).toEqual([]);
+  expect(full.trace.events.length).toBeGreaterThan(0);
+ });
  it('propagates integrated transport through replicated experiments',()=>{
   const result=runProcessExperiment(scenario('airport',2,900),{replications:4,transport:options.transport});
   expect(result.metrics.transportDistanceMeters.samples).toBe(4);

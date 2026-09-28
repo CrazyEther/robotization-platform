@@ -1,6 +1,7 @@
 import type {SimulationScenarioV2} from './contracts';
 import {compileScenario} from './compiler';
 import {runProcessNetwork,type ProcessRun,type ProcessRunOptions} from './process-runtime';
+import {compileTransportNetwork} from './transport-network';
 
 export type SampleSummary={
  samples:number;mean:number|null;stddev:number|null;
@@ -87,7 +88,10 @@ export function runProcessExperiment(
  if(new Set(seeds).size!==seeds.length)throw new Error('Derived experiment seeds must be unique.');
 
  const compiled=scenario;
- const runOptions:ProcessRunOptions=options.transport?{transport:options.transport}:{};
+ const network=options.transport?compileTransportNetwork(scenario,options.transport.robotId,{safetyClearanceMeters:options.transport.safetyClearanceMeters}):undefined;
+ const runOptions:ProcessRunOptions=options.transport
+  ?{traceMode:'metrics',transport:{...options.transport,network}}
+  :{traceMode:'metrics'};
  const processRuns=seeds.map(seed=>{
   const runScenario=compileScenario({...compiled,scenarioHash:undefined,workload:{...compiled.workload,seed}});
   return {seed,scenario:runScenario,run:runProcessNetwork(runScenario,runOptions)};

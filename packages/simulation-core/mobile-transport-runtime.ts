@@ -4,7 +4,7 @@ import {ChargingScheduler,type ChargingSlot} from './charging';
 import {generateLinearMotionEvents,planRestToRestMotion} from './motion';
 import {planScenarioRoute,type NavigationRoute} from './navigation';
 import {ReservationTable} from './traffic';
-import {compileTransportNetwork,type TransportLeg} from './transport-network';
+import {compileTransportNetwork,type TransportLeg,type TransportNetwork} from './transport-network';
 
 export type MobileTransportEvent=
  | {kind:'mobile-transport-complete';taskId:string;edgeId:string;robotId:string;distanceMeters:number;energyWh:number}
@@ -15,6 +15,7 @@ type Request={taskId:string;edgeId:string;enteredAt:number};
 type RobotState={id:string;busy:boolean;currentObjectId:string;energyWh:number};
 type Emit=(event:Record<string,unknown>)=>void;
 type Schedule=(at:number,payload:MobileTransportEvent)=>void;
+type RoutePlan={route:NavigationRoute|null;floorId:string;distanceMeters:number;motionSeconds:number;energyWh:number}|null;
 
 export type MobileTransportMetrics={
  distanceMeters:number;energyKwh:number;waitSeconds:number;meanWaitSeconds:number;trafficWaitSeconds:number;
@@ -50,18 +51,20 @@ export class MobileTransportRuntime{
  private readonly queue:Request[]=[];
  private readonly traffic=new ReservationTable();
  private readonly charging=new ChargingScheduler();
+ private readonly routeCache=new Map<string,RoutePlan>();
  private distanceMeters=0;private energyWh=0;private waitSeconds=0;private trafficWaitSeconds=0;private busySeconds=0;private minSocObserved=1;private startedRequests=0;
  private chargeCount=0;private chargingSeconds=0;private chargerWaitSeconds=0;private chargedEnergyWh=0;private chargeSequence=0;
 
  constructor(
   private readonly scenario:SimulationScenarioV2,
-  private readonly options:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number},
+  private readonly options:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number;network?:TransportNetwork;emitMotion?:boolean},
   private readonly horizon:number,
   private readonly emit:Emit,
  ){
   if(!Number.isFinite(options.samplePeriodSeconds)||options.samplePeriodSeconds<=0)
    throw new RangeError('Transport samplePeriodSeconds must be finite and > 0');
-  const network=compileTransportNetwork(scenario,options.robotId,{safetyClearanceMeters:options.safetyClearanceMeters});
+  const network=options.network??compileTransportNetwork(scenario,options.robotId,{safetyClearanceMeters:options.safetyClearanceMeters});
+  if(network.robotId!==options.robotId)throw new Error('Precompiled transport network belongs to a different robot.');
   if(!network.legs.length)throw new Error('Mobile transport runtime requires at least one transport edge.');
   network.legs.forEach(leg=>this.legs.set(leg.edgeId,leg));
   const robot=scenario.robots.find(item=>item.id===options.robotId);
@@ -137,19 +140,27 @@ export class MobileTransportRuntime{
   this.minSocObserved=Math.min(this.minSocObserved,robot.energyWh/this.robotSpec.battery.capacityWh);
  }
 
- private routeBetween(startObjectId:string,endObjectId:string){
+ private routeBetween(startObjectId:string,endObjectId:string):RoutePlan{
+  const key=startObjectId+'→'+endObjectId;
+  if(this.routeCache.has(key))return this.routeCache.get(key)!;
   const floorId=locateFloor(this.scenario,startObjectId);
-  if(locateFloor(this.scenario,endObjectId)!==floorId)return null;
-  if(startObjectId===endObjectId)return {route:null,floorId,distanceMeters:0,motionSeconds:0,energyWh:0};
-  const route=planScenarioRoute({
-   scenario:this.scenario,floorId,startObjectId,endObjectId,
-   robotId:this.robotSpec.id,safetyClearanceMeters:this.options.safetyClearanceMeters,
-  });
-  if(!route)return null;
-  return {
-   route,floorId,distanceMeters:route.distanceMeters,motionSeconds:routeMotionSeconds(route,this.robotSpec),
-   energyWh:motionEnergyWh(route.distanceMeters,this.robotSpec.battery),
-  };
+  let result:RoutePlan=null;
+  if(locateFloor(this.scenario,endObjectId)===floorId){
+   if(startObjectId===endObjectId){
+    result={route:null,floorId,distanceMeters:0,motionSeconds:0,energyWh:0};
+   }else{
+    const route=planScenarioRoute({
+     scenario:this.scenario,floorId,startObjectId,endObjectId,
+     robotId:this.robotSpec.id,safetyClearanceMeters:this.options.safetyClearanceMeters,
+    });
+    if(route)result={
+     route,floorId,distanceMeters:route.distanceMeters,motionSeconds:routeMotionSeconds(route,this.robotSpec),
+     energyWh:motionEnergyWh(route.distanceMeters,this.robotSpec.battery),
+    };
+   }
+  }
+  this.routeCache.set(key,result);
+  return result;
  }
 
  private reposition(robot:RobotState,leg:TransportLeg){
@@ -172,6 +183,7 @@ export class MobileTransportRuntime{
  }
 
  private addMotion(route:NavigationRoute,start:number,floorId:string,robotId:string,idPrefix:string,taskId:string|undefined,motionRole:string){
+  if(this.options.emitMotion===false)return;
   let cursor=start;
   for(let index=0;index<route.points.length-1;index++){
    const a=route.points[index],b=route.points[index+1];

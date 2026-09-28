@@ -6,6 +6,7 @@ import {generateDowntimeWindows,nextOperationalTime,operationalSeconds,serviceCo
 import {sampleDurationSeconds} from './distribution';
 import {createSeededRandom} from './random';
 import {MobileTransportRuntime,type MobileTransportEvent} from './mobile-transport-runtime';
+import type {TransportNetwork} from './transport-network';
 
 type ProcessNode=SimulationScenarioV2['process']['nodes'][number];
 type Task={id:string;arrival:number};
@@ -18,7 +19,8 @@ type Payload=
  | MobileTransportEvent;
 
 export type ProcessRunOptions={
- transport?:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number};
+ traceMode?:'full'|'metrics';
+ transport?:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number;network?:TransportNetwork};
 };
 export type ProcessRun={
  engine:{name:'simcore-process';version:'3'};
@@ -91,6 +93,7 @@ function sampleNodeDuration(node:ProcessNode,random:()=>number):number{
 }
 
 export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessRunOptions={}):ProcessRun{
+ const traceEnabled=options.traceMode!=='metrics';
  const order=linearOrder(scenario);
  const nodesById=new Map(order.map(node=>[node.id,node] as const));
  const edgeByFrom=new Map(scenario.process.edges.map(edge=>[edge.from,edge] as const));
@@ -121,9 +124,9 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
  let created=0,completed=0,traceOrder=0;
  const queueWaits:number[]=[],cycles:number[]=[];
  const raw:{event:Record<string,unknown>;order:number}[]=[];
- const push=(event:Record<string,unknown>)=>raw.push({event,order:traceOrder++});
+ const push=(event:Record<string,unknown>)=>{if(traceEnabled)raw.push({event,order:traceOrder++});};
  const mobileTransport=transportEdges.length
-  ?new MobileTransportRuntime(scenario,options.transport!,horizon,push)
+  ?new MobileTransportRuntime(scenario,{...options.transport!,emitMotion:traceEnabled},horizon,push)
   :null;
  const finishTask=(task:Task,now:number)=>{
   completed++;cycles.push(now-task.arrival);
@@ -215,11 +218,14 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   advance(payload.task,payload.node,now,schedule);
  });
  const engine={name:'simcore-process' as const,version:'3' as const};
- const trace=parseEventTrace({
+ const trace:EventTrace=traceEnabled?parseEventTrace({
   schemaVersion:'ris-event-trace/1',scenarioHash:scenario.scenarioHash,engine,
   startedAt:'1970-01-01T00:00:00.000Z',
   events:raw.sort((a,b)=>(Number(a.event.t)-Number(b.event.t))||a.order-b.order).map(item=>item.event),
- },scenario);
+ },scenario):{
+  schemaVersion:'ris-event-trace/1',scenarioHash:scenario.scenarioHash,engine,
+  startedAt:'1970-01-01T00:00:00.000Z',events:[],
+ };
  const resourceUtilization=Object.fromEntries([...resources.values()].map(resource=>[
   resource.id,horizon>0?resource.busySeconds/(resource.capacity*horizon):0,
  ]));
