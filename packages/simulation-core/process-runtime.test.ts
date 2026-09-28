@@ -38,7 +38,7 @@ describe('Domain-neutral process runtime',()=>{
   ['airport','assembly'] as const,
  ])('executes %s semantics without sector-specific runtime branches', (profile,kind)=>{
   const run=runProcessNetwork(scenario(profile,kind,5,1));
-  expect(run.engine).toEqual({name:'simcore-process',version:'3'});
+  expect(run.engine).toEqual({name:'simcore-process',version:'4'});
   expect(run.metrics.created).toBe(6);
   expect(run.metrics.completed).toBe(6);
   expect(run.metrics.backlog).toBe(0);
@@ -106,7 +106,7 @@ describe('Domain-neutral process runtime',()=>{
   expect(run.trace.events.filter(e=>e.type==='resource.repaired')).toHaveLength(3);
  });
 
- it('fails closed on branching or cyclic process graphs in v1',()=>{
+ it('fails closed on invalid source branching and cycles into the source',()=>{
   const base=scenario('factory','process',5,1);
   const branch=structuredClone(base);
   branch.process.nodes.push({id:'other',label:'Other',kind:'sink',facilityObjectId:'end-station',properties:{}});
@@ -115,5 +115,20 @@ describe('Domain-neutral process runtime',()=>{
   const cycle=structuredClone(base);
   cycle.process.edges[1]={id:'e2',from:'work',to:'source',mode:'flow'};
   expect(()=>runProcessNetwork(compileScenario(cycle))).toThrow(/source|cycle|incoming/i);
+ });
+});
+
+describe('Unsupported process semantics',()=>{
+ it('fails closed for finite buffer nodes instead of silently treating them as zero-time flow',()=>{
+  const base=scenario('factory','process',5,1);
+  const raw=structuredClone(base);
+  delete (raw as Partial<typeof raw>).scenarioHash;
+  raw.process.nodes.splice(2,0,{id:'buffer',label:'Finite buffer',kind:'buffer',facilityObjectId:'work-resource',properties:{}});
+  raw.process.edges=[
+   {id:'e1',from:'source',to:'work',mode:'flow'},
+   {id:'e2',from:'work',to:'buffer',mode:'flow'},
+   {id:'e3',from:'buffer',to:'sink',mode:'flow'},
+  ];
+  expect(()=>runProcessNetwork(compileScenario(raw))).toThrow(/finite buffer|fail-closed/i);
  });
 });

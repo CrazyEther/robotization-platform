@@ -25,7 +25,7 @@ export type ProcessRunOptions={
  transport?:{robotId:string;safetyClearanceMeters:number;samplePeriodSeconds:number;network?:TransportNetwork};
 };
 export type ProcessRun={
- engine:{name:'simcore-process';version:'3'};
+ engine:{name:'simcore-process';version:'4'};
  scenarioHash:string;trace:EventTrace;
  metrics:{
   created:number;completed:number;backlog:number;
@@ -68,6 +68,8 @@ function sampleNodeDuration(node:ProcessNode,random:()=>number):number{
 export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessRunOptions={}):ProcessRun{
  const traceEnabled=options.traceMode!=='metrics';
  const graph=compileProcessGraph(scenario),nodesById=graph.nodesById;
+ const unsupportedBuffer=scenario.process.nodes.find(node=>node.kind==='buffer');
+ if(unsupportedBuffer)throw new Error('Finite buffer occupancy is not implemented in simcore-process/4; buffer nodes are fail-closed: '+unsupportedBuffer.id);
  const maxTransitions=options.maxTransitionsPerTask??10_000;
  if(!Number.isInteger(maxTransitions)||maxTransitions<1||maxTransitions>1_000_000)
   throw new RangeError('maxTransitionsPerTask must be an integer from 1 to 1000000.');
@@ -194,7 +196,7 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
   dispatchResource(resource,now,schedule);
   advance(payload.task,payload.node,now,schedule);
  });
- const engine={name:'simcore-process' as const,version:'3' as const};
+ const engine={name:'simcore-process' as const,version:'4' as const};
  const trace:EventTrace=traceEnabled?parseEventTrace({
   schemaVersion:'ris-event-trace/1',scenarioHash:scenario.scenarioHash,engine,
   startedAt:'1970-01-01T00:00:00.000Z',
@@ -231,8 +233,8 @@ export function runProcessNetwork(scenario:SimulationScenarioV2,options:ProcessR
    chargerWaitSeconds:transportMetrics.chargerWaitSeconds,chargedEnergyKwh:transportMetrics.chargedEnergyKwh,
   },
   warnings:[
-   'simcore-process/3 executes one connected linear process with stochastic service, reliability and optional mobile transport.',
-   'Branching, rework loops, finite buffer occupancy and multi-floor lift transport are intentionally fail-closed in this version.',
+   'simcore-process/4 executes validated process graphs with probabilistic branching/rework, stochastic service, reliability and optional mobile transport.',
+   'Finite buffer occupancy and multi-floor lift transport are intentionally fail-closed in this version.',
    ...(mobileTransport?[
     'Integrated mobile transport preserves robot position, models empty reposition and uses conservative floor-level traffic reservations.',
     'Integrated mobile transport initializes all robots at the origin of the first compiled transport leg.',

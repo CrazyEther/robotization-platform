@@ -47,7 +47,7 @@ export const simulationCoreStudyDtoSchema=z.object({
  robot:z.object({
   scenarioHash:z.string().regex(/^fnv1a64:[0-9a-f]{16}$/),
   run:z.object({
-   engine:z.object({name:z.literal('simcore-process'),version:z.literal('3')}).strict(),
+   engine:z.object({name:z.literal('simcore-process'),version:z.literal('4')}).strict(),
    metrics:runMetricsSchema,trace:eventTraceSchema,warnings:z.array(z.string()),
   }).strict(),
   experiment:experimentViewSchema,
