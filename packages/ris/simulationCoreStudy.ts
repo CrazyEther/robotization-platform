@@ -5,6 +5,42 @@ import {
 } from '../simulation-core';
 
 const finite=z.number().finite();
+export const simulationStudyLimits={
+ maxReplications:30,
+ maxTasks:50_000,
+ maxCyclicTransitionsPerTask:128,
+ maxTransitions:2_000_000,
+} as const;
+const STUDY_TASK_BUDGET=simulationStudyLimits.maxTasks;
+const CYCLIC_MAX_TRANSITIONS_PER_TASK=simulationStudyLimits.maxCyclicTransitionsPerTask;
+const STUDY_TRANSITION_BUDGET=simulationStudyLimits.maxTransitions;
+
+type ProcessGraphShape={process:{nodes:Array<{id:string}>;edges:Array<{from:string;to:string}>}};
+const hasDirectedCycle=(nodes:Array<{id:string}>,edges:Array<{from:string;to:string}>)=>{
+ const outgoing=new Map(nodes.map(node=>[node.id,[] as string[]] as const));
+ const indegree=new Map<string,number>(nodes.map(node=>[node.id,0]));
+ for(const edge of edges){
+  const targets=outgoing.get(edge.from);
+  if(!targets||!indegree.has(edge.to))continue;
+  targets.push(edge.to);
+  indegree.set(edge.to,(indegree.get(edge.to)??0)+1);
+ }
+ const queue=nodes.filter(node=>(indegree.get(node.id)??0)===0).map(node=>node.id);
+ let visited=0;
+ for(let head=0;head<queue.length;head++){
+  const id=queue[head];visited++;
+  for(const next of outgoing.get(id)??[]){
+   const remaining=(indegree.get(next)??0)-1;
+   indegree.set(next,remaining);
+   if(remaining===0)queue.push(next);
+  }
+ }
+ return visited!==nodes.length;
+};
+const transitionLimitFor=(scenario:ProcessGraphShape)=>
+ hasDirectedCycle(scenario.process.nodes,scenario.process.edges)
+  ?CYCLIC_MAX_TRANSITIONS_PER_TASK
+  :Math.max(8,scenario.process.nodes.length*2);
 export const baselineMobileSchema=z.object({
  workers:z.number().int().min(1).max(1000),
  speedMps:finite.positive().max(10),
@@ -15,12 +51,17 @@ export const simulationStudyRequestSchema=z.object({
  scenario:simulationScenarioSchema,
  robotId:z.string().trim().min(1).max(128),
  baseline:baselineMobileSchema,
- replications:z.number().int().min(1).max(30),
+ replications:z.number().int().min(1).max(simulationStudyLimits.maxReplications),
  safetyClearanceMeters:finite.min(0).max(10),
  samplePeriodSeconds:finite.positive().max(60),
 }).strict().superRefine((value,ctx)=>{
- const expectedRuns=value.scenario.workload.demandPerHour*value.scenario.workload.shiftHours*value.replications*2;
- if(expectedRuns>50_000)ctx.addIssue({code:'custom',message:'Simulation study exceeds the edge compute safety budget'});
+ const tasksPerRun=value.scenario.workload.demandPerHour*value.scenario.workload.shiftHours;
+ const totalTasks=tasksPerRun*(value.replications*2+2);
+ if(totalTasks>STUDY_TASK_BUDGET)
+  ctx.addIssue({code:'custom',message:'Simulation study exceeds the edge task budget'});
+ const transitionBudget=totalTasks*transitionLimitFor(value.scenario);
+ if(transitionBudget>STUDY_TRANSITION_BUDGET)
+  ctx.addIssue({code:'custom',message:'Simulation study exceeds the transition budget'});
 });
 export type SimulationStudyRequest=z.infer<typeof simulationStudyRequestSchema>;
 
@@ -68,10 +109,11 @@ export function runSimulationCoreStudy(raw:SimulationStudyRequest):SimulationCor
   safetyClearanceMeters:input.safetyClearanceMeters,
   samplePeriodSeconds:input.samplePeriodSeconds,
  };
- const robotRun=runProcessNetwork(scenario,{transport});
- const baselineRun=runProcessNetwork(baselineScenario,{transport:baselineTransport});
- const robotExperiment=runProcessExperiment(scenario,{replications:input.replications,transport});
- const baselineExperiment=runProcessExperiment(baselineScenario,{replications:input.replications,transport:baselineTransport});
+ const maxTransitionsPerTask=transitionLimitFor(scenario);
+ const robotRun=runProcessNetwork(scenario,{transport,maxTransitionsPerTask});
+ const baselineRun=runProcessNetwork(baselineScenario,{transport:baselineTransport,maxTransitionsPerTask});
+ const robotExperiment=runProcessExperiment(scenario,{replications:input.replications,transport,maxTransitionsPerTask});
+ const baselineExperiment=runProcessExperiment(baselineScenario,{replications:input.replications,transport:baselineTransport,maxTransitionsPerTask});
  return {
   engine:{name:'ris-simulation-study',version:'1'},
   scenarioHash:scenario.scenarioHash,robotId:robot.id,robotCount:robot.fleetSize,replications:input.replications,

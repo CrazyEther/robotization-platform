@@ -80,7 +80,7 @@ const summarizeMetric=<K extends keyof ProcessRun['metrics']>(
 
 export function runProcessExperiment(
  scenario:SimulationScenarioV2,
- options:{replications:number;transport?:ProcessRunOptions['transport']},
+ options:{replications:number;transport?:ProcessRunOptions['transport'];maxTransitionsPerTask?:number},
 ):ProcessExperiment{
  if(!Number.isInteger(options.replications)||options.replications<1||options.replications>1000)
   throw new RangeError('Experiment replication count must be an integer from 1 to 1000.');
@@ -90,8 +90,8 @@ export function runProcessExperiment(
  const compiled=scenario;
  const network=options.transport?compileTransportNetwork(scenario,options.transport.robotId,{safetyClearanceMeters:options.transport.safetyClearanceMeters}):undefined;
  const runOptions:ProcessRunOptions=options.transport
-  ?{traceMode:'metrics',transport:{...options.transport,network}}
-  :{traceMode:'metrics'};
+  ?{traceMode:'metrics',maxTransitionsPerTask:options.maxTransitionsPerTask,transport:{...options.transport,network}}
+  :{traceMode:'metrics',maxTransitionsPerTask:options.maxTransitionsPerTask};
  const processRuns=seeds.map(seed=>{
   const runScenario=compileScenario({...compiled,scenarioHash:undefined,workload:{...compiled.workload,seed}});
   return {seed,scenario:runScenario,run:runProcessNetwork(runScenario,runOptions)};

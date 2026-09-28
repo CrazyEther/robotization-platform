@@ -10,7 +10,7 @@ import * as domain from '../../packages/domain/index';
 import {assessCandidates} from '../../packages/catalog/matching';
 import {buildKnowledgeGraph} from '../../packages/catalog/knowledge';
 import {AnyLogicCloud,cloudRequestSchema} from '../../packages/ris/cloud';
-import {runSimulationCoreStudy,simulationStudyRequestSchema} from '../../packages/ris/simulationCoreStudy';
+import {runSimulationCoreStudy,simulationStudyLimits,simulationStudyRequestSchema} from '../../packages/ris/simulationCoreStudy';
 import {toSimulationCoreStudyDto} from '../../packages/ris/simulationCoreStudyClient';
 
 export type Bindings = { SUPABASE_URL?:string; SUPABASE_ANON_KEY?:string; GOOGLE_OAUTH_ENABLED?:string; PUBLIC_PREVIEW_MODE?:string; ANYLOGIC_API_KEY?:string;ANYLOGIC_MODEL_ID?:string;ANYLOGIC_VERSION_ID?:string;ANYLOGIC_CLOUD_ORIGIN?:string;ANYLOGIC_WORKSPACE_TOKEN?:string; ASSETS?:{fetch:(request:Request)=>Promise<Response>} };
@@ -37,7 +37,7 @@ app.get('/api/v1/ris/cloud/status',c=>{
 app.get('/api/v1/simulation-core/status',c=>c.json({
  engine:'Simulation Core v2',version:'simcore-process/3',studyVersion:'ris-simulation-study/1',
  capabilities:['facility-model','continuous-routing','kinematics','des','reliability','stochastic-service','multi-robot-transport','traffic-reservations','energy','charging','monte-carlo','confidence-intervals'],
- limits:{maxReplications:30,maxStudyTaskExecutions:50000,maxRequestBytes:2*1024*1024},
+ limits:{maxReplications:simulationStudyLimits.maxReplications,maxStudyTaskExecutions:simulationStudyLimits.maxTasks,maxCyclicTransitionsPerTask:simulationStudyLimits.maxCyclicTransitionsPerTask,maxStudyTransitions:simulationStudyLimits.maxTransitions,maxRequestBytes:2*1024*1024},
 }));
 app.post('/api/v1/simulation-core/study',async c=>{
  const parsed=simulationStudyRequestSchema.safeParse(await json(c.req.raw));

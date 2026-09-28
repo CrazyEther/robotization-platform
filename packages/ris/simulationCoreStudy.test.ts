@@ -31,6 +31,37 @@ describe('Simulation Core study',()=>{
   const parsed=simulationStudyRequestSchema.safeParse({scenario:{...scenario,workload:{...scenario.workload,demandPerHour:10000,shiftHours:24}},robotId:'legacy-robot',baseline,replications:30,safetyClearanceMeters:.2,samplePeriodSeconds:1});
   expect(parsed.success).toBe(false);
  });
+ it('rejects a cyclic rework study that exceeds the transition budget',()=>{
+  const scenario=structuredClone(compileLegacyScenario(createScenario('factory')));
+  scenario.process.nodes.push({id:'decision',label:'Decision',kind:'decision',properties:{}});
+  scenario.process.edges=[
+   {id:'e1',from:'source',to:'decision',mode:'flow'},
+   {id:'pass',from:'decision',to:'sink',mode:'flow',probability:.9},
+   {id:'rework',from:'decision',to:'decision',mode:'flow',probability:.1},
+  ];
+  scenario.workload={...scenario.workload,demandPerHour:200,shiftHours:8};
+  const parsed=simulationStudyRequestSchema.safeParse({scenario,robotId:'legacy-robot',baseline,replications:5,safetyClearanceMeters:.2,samplePeriodSeconds:1});
+  expect(parsed.success).toBe(false);
+  if(!parsed.success)expect(parsed.error.issues.map(issue=>issue.message).join(' ')).toMatch(/transition budget/i);
+ });
+ it('rejects a very long acyclic study that exceeds the transition budget',()=>{
+  const scenario=structuredClone(compileLegacyScenario(createScenario('factory')));
+  const source=scenario.process.nodes.find(node=>node.kind==='source')!;
+  const sink=scenario.process.nodes.find(node=>node.kind==='sink')!;
+  const middle=Array.from({length:220},(_,index)=>({
+   id:'step-'+index,label:'Step '+index,kind:'process' as const,durationSeconds:1,properties:{},
+  }));
+  scenario.process.nodes=[source,...middle,sink];
+  scenario.process.edges=[
+   {id:'start',from:source.id,to:middle[0].id,mode:'flow'},
+   ...middle.slice(0,-1).map((node,index)=>({id:'m-'+index,from:node.id,to:middle[index+1].id,mode:'flow' as const})),
+   {id:'finish',from:middle.at(-1)!.id,to:sink.id,mode:'flow'},
+  ];
+  scenario.workload={...scenario.workload,demandPerHour:50,shiftHours:8};
+  const parsed=simulationStudyRequestSchema.safeParse({scenario,robotId:'legacy-robot',baseline,replications:5,safetyClearanceMeters:.2,samplePeriodSeconds:1});
+  expect(parsed.success).toBe(false);
+  if(!parsed.success)expect(parsed.error.issues.map(issue=>issue.message).join(' ')).toMatch(/transition budget/i);
+ });
 });
 
 describe('Simulation Core investment assessment',()=>{
