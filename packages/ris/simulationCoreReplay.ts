@@ -4,11 +4,17 @@ import type {EventTrace} from '../simulation-core/trace';
 export type SimulationReplayRobot={
  id:string;x:number;y:number;state:string;taskId:string|null;batteryPercent?:number;
 };
+export type SimulationReplayCargo={
+ id:string;taskId:string;x:number;y:number;
+ phase:'input'|'loaded'|'processing'|'output'|'waiting'|'delivered';
+ attachedRobotId:string|null;
+};
 export type SimulationReplayFrame={
- t:number;robots:SimulationReplayRobot[];created:number;completed:number;backlog:number;
+ t:number;robots:SimulationReplayRobot[];cargos:SimulationReplayCargo[];created:number;completed:number;backlog:number;
 };
 
 type RobotState=SimulationReplayRobot&{floorId:string};
+type CargoState=SimulationReplayCargo&{deliveredAt?:number;originStage:'input'|'output'};
 
 const center=(object:SimulationScenarioV2['facility']['floors'][number]['objects'][number])=>({
  x:object.geometry.x+object.geometry.w/2,
@@ -40,10 +46,14 @@ const stateFromMotion=(event:EventTrace['events'][number])=>{
  return role;
 };
 
-const cloneFrame=(t:number,states:Map<string,RobotState>,created:number,completed:number):SimulationReplayFrame=>({
+const cloneFrame=(t:number,states:Map<string,RobotState>,cargos:Map<string,CargoState>,
+ created:number,completed:number):SimulationReplayFrame=>({
  t,
  robots:[...states.values()].map(({id,x,y,state,taskId,batteryPercent})=>({
   id,x,y,state,taskId,...(batteryPercent===undefined?{}:{batteryPercent}),
+ })).sort((a,b)=>a.id.localeCompare(b.id)),
+ cargos:[...cargos.values()].map(({id,taskId,x,y,phase,attachedRobotId})=>({
+  id,taskId,x,y,phase,attachedRobotId,
  })).sort((a,b)=>a.id.localeCompare(b.id)),
  created,completed,backlog:Math.max(0,created-completed),
 });
@@ -71,6 +81,7 @@ export function buildSimulationCoreReplay(
  if(trace.scenarioHash!==scenario.scenarioHash)throw new Error('Replay trace does not match the scenario hash.');
  const initial=initialRobotLocation(scenario);
  const states=new Map<string,RobotState>();
+ const cargos=new Map<string,CargoState>();
  for(const spec of scenario.robots){
   for(let index=1;index<=spec.fleetSize;index++){
    const id=spec.id+'#'+index;
@@ -78,7 +89,10 @@ export function buildSimulationCoreReplay(
   }
  }
  let created=0,completed=0;
- const frames:SimulationReplayFrame[]=[cloneFrame(0,states,created,completed)];
+ const frames:SimulationReplayFrame[]=[cloneFrame(0,states,cargos,created,completed)];
+ const locations=new Map(scenario.facility.floors.flatMap(floor=>floor.objects.map(object=>[
+  object.id,{...center(object),floorId:floor.id},
+ ] as const)));
  const events=trace.events;
  for(let cursor=0;cursor<events.length;){
   const t=events[cursor].t;
@@ -87,6 +101,34 @@ export function buildSimulationCoreReplay(
    const event=events[next];
    if(event.type==='task.created')created++;
    if(event.type==='task.completed')completed++;
+   if(event.entityId){
+    const location=typeof event.data?.locationId==='string'?
+     locations.get(event.data.locationId):undefined;
+    const at=event.position??location;
+    if(event.type==='entity.created'){
+     const originStage=event.data?.stage==='output'?'output':'input';
+     cargos.set(event.entityId,{
+      id:event.entityId,taskId:event.taskId??'',x:at?.x??initial.x,y:at?.y??initial.y,
+      phase:originStage,attachedRobotId:null,originStage,
+     });
+    }else{
+     const cargo=cargos.get(event.entityId);
+     if(cargo){
+      if(at){cargo.x=at.x;cargo.y=at.y;}
+      if(event.type==='entity.loaded'){
+       cargo.phase='loaded';cargo.attachedRobotId=event.resourceId??null;
+      }else if(event.type==='entity.unloaded'){
+       cargo.attachedRobotId=null;cargo.phase=cargo.originStage;
+      }else if(event.type==='entity.processing'){
+       cargo.phase='processing';cargo.attachedRobotId=null;
+      }else if(event.type==='entity.consumed'){
+       cargos.delete(event.entityId);
+      }else if(event.type==='entity.completed'){
+       cargo.phase='delivered';cargo.attachedRobotId=null;cargo.deliveredAt=t;
+      }
+     }
+    }
+   }
    if(event.resourceId&&states.has(event.resourceId)){
     const robot=states.get(event.resourceId)!;
     if(event.position){
@@ -95,6 +137,9 @@ export function buildSimulationCoreReplay(
     if(event.type==='robot.motion'){
      robot.state=stateFromMotion(event);
      robot.taskId=event.taskId??robot.taskId;
+     for(const cargo of cargos.values())if(cargo.attachedRobotId===robot.id){
+      cargo.x=robot.x;cargo.y=robot.y;
+     }
     }else if(event.type==='robot.waiting'){
      robot.state='waiting';robot.taskId=event.taskId??robot.taskId;
     }else if(event.type==='robot.charging'){
@@ -112,7 +157,10 @@ export function buildSimulationCoreReplay(
    }
    next++;
   }
-  const frame=cloneFrame(t,states,created,completed);
+  for(const [id,cargo] of cargos){
+   if(cargo.phase==='delivered'&&cargo.deliveredAt!==undefined&&t-cargo.deliveredAt>20)cargos.delete(id);
+  }
+  const frame=cloneFrame(t,states,cargos,created,completed);
   if(t===0)frames[0]=frame;else frames.push(frame);
   cursor=next;
  }

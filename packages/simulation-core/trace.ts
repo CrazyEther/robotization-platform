@@ -5,6 +5,7 @@ const finite=z.number().finite();
 const id=z.string().trim().min(1).max(160);
 const eventType=z.enum([
  'task.created','task.assigned','task.completed',
+ 'entity.created','entity.loaded','entity.unloaded','entity.processing','entity.consumed','entity.completed',
  'robot.motion','robot.waiting','robot.charging','robot.failed',
  'resource.requested','resource.reserved','resource.released','resource.failed','resource.repaired',
  'process.started','process.completed','traffic.conflict','traffic.deadlock',

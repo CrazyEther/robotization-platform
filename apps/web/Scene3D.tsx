@@ -2,10 +2,15 @@ import {useEffect,useRef} from 'react';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import type {Layout} from '../../packages/ris/contracts';
+import type {SimulationReplayCargo} from '../../packages/ris/simulationCoreReplay';
+import type {AnyLogicSceneObject} from '../../packages/ris/anylogic';
 
 type Robot={id:string;x:number;y:number};
-export default function Scene3D({layout,robots}:{layout:Layout;robots:Robot[]}){
+export default function Scene3D({layout,robots,cargos=[],objects=[]}:{
+ layout:Layout;robots:Robot[];cargos?:SimulationReplayCargo[];objects?:AnyLogicSceneObject[];
+}){
  const host=useRef<HTMLDivElement>(null),robotMeshes=useRef<Map<string,THREE.Mesh>>(new Map());
+ const cargoMeshes=useRef<Map<string,THREE.Mesh>>(new Map());
  const renderer=useRef<THREE.WebGLRenderer|null>(null);
  useEffect(()=>{
   const el=host.current;if(!el)return;
@@ -31,10 +36,17 @@ export default function Scene3D({layout,robots}:{layout:Layout;robots:Robot[]}){
   light.position.set(12,30,8);scene.add(light);
   const toWorld=(x:number,y:number)=>({x:x-layout.width/2,z:y-layout.height/2});
   const blockMat=new THREE.MeshStandardMaterial({color:0x82919d,roughness:.86});
+  const staticMeshes:THREE.Mesh[]=[];
   for(const o of layout.obstacles){
    const mesh=new THREE.Mesh(new THREE.BoxGeometry(o.w,2,o.h),blockMat);
    const {x,z}=toWorld(o.x+o.w/2,o.y+o.h/2);
-   mesh.position.set(x,1,z);scene.add(mesh);
+   mesh.position.set(x,1,z);scene.add(mesh);staticMeshes.push(mesh);
+  }
+  for(const object of objects.filter(object=>object.id==='demo-machine')){
+   const pad=new THREE.Mesh(new THREE.BoxGeometry(object.w,.15,object.h),
+    new THREE.MeshStandardMaterial({color:0x38a3b9,roughness:.45}));
+   const {x,z}=toWorld(object.x+object.w/2,object.y+object.h/2);
+   pad.position.set(x,.09,z);scene.add(pad);staticMeshes.push(pad);
   }
   for(const [point,color] of [[layout.pickup,0x448efa],[layout.dropoff,0xff8545]] as const){
    const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.06,24),new THREE.MeshBasicMaterial({color}));
@@ -44,10 +56,19 @@ export default function Scene3D({layout,robots}:{layout:Layout;robots:Robot[]}){
   resize();const observer=new ResizeObserver(resize);observer.observe(el);
   const tick=()=>{controls.update();webgl.render(scene,camera);animation=requestAnimationFrame(tick);};
   let animation=requestAnimationFrame(tick);
-  robotMeshes.current=new Map();
-  const map=robotMeshes.current;
-  return ()=>{cancelAnimationFrame(animation);observer.disconnect();controls.dispose();blockMat.dispose();floor.geometry.dispose();(floor.material as THREE.Material).dispose();(grid.material as THREE.Material).dispose();for(const m of map.values()){scene.remove(m);m.geometry.dispose();(m.material as THREE.Material).dispose();}webgl.dispose();webgl.domElement.remove();robotMeshes.current=new Map();renderer.current=null;};
- },[layout]);
+  robotMeshes.current=new Map();cargoMeshes.current=new Map();
+  const map=robotMeshes.current,cargoMap=cargoMeshes.current;
+  return ()=>{
+   cancelAnimationFrame(animation);observer.disconnect();controls.dispose();
+   blockMat.dispose();floor.geometry.dispose();(floor.material as THREE.Material).dispose();
+   (grid.material as THREE.Material).dispose();
+   for(const m of staticMeshes){m.geometry.dispose();if(m.material!==blockMat)(m.material as THREE.Material).dispose();}
+   for(const m of [...map.values(),...cargoMap.values()]){
+    scene.remove(m);m.geometry.dispose();(m.material as THREE.Material).dispose();
+   }
+   webgl.dispose();webgl.domElement.remove();robotMeshes.current=new Map();cargoMeshes.current=new Map();renderer.current=null;
+  };
+ },[layout,objects]);
  useEffect(()=>{
   const el=host.current,canvas=renderer.current;if(!el||!canvas)return;
   const scene=(canvas as THREE.WebGLRenderer & {__risScene?:THREE.Scene}).__risScene;
@@ -59,6 +80,24 @@ export default function Scene3D({layout,robots}:{layout:Layout;robots:Robot[]}){
    if(!mesh){mesh=new THREE.Mesh(new THREE.BoxGeometry(1.4,.65,1.1),new THREE.MeshStandardMaterial({color:0x69d5cf}));scene.add(mesh);robotMeshes.current.set(robot.id,mesh);}
    mesh.position.set(robot.x-layout.width/2,.38,robot.y-layout.height/2);
   }
- },[robots,layout]);
+  const visible=new Set(cargos.map(cargo=>cargo.id));
+  for(const [id,mesh] of cargoMeshes.current)if(!visible.has(id)){
+   scene.remove(mesh);mesh.geometry.dispose();(mesh.material as THREE.Material).dispose();cargoMeshes.current.delete(id);
+  }
+  for(const cargo of cargos){
+   let mesh=cargoMeshes.current.get(cargo.id);
+   if(!mesh){
+    mesh=new THREE.Mesh(new THREE.BoxGeometry(.7,.48,.7),
+     new THREE.MeshStandardMaterial({color:0xfbbf24}));
+    scene.add(mesh);cargoMeshes.current.set(cargo.id,mesh);
+   }
+   (mesh.material as THREE.MeshStandardMaterial).color.setHex(
+    cargo.phase==='processing'?0xf97316:
+    cargo.phase==='output'||cargo.phase==='delivered'?0x16a34a:
+    cargo.phase==='loaded'?0x38bdf8:0xfbbf24,
+   );
+   mesh.position.set(cargo.x-layout.width/2,cargo.attachedRobotId ? .95 : .28,cargo.y-layout.height/2);
+  }
+ },[robots,cargos,layout]);
  return <div ref={host} className="ris-scene-3d" role="img" aria-label="Трёхмерное геометрическое представление помещения и положения роботов"/>;
 }
