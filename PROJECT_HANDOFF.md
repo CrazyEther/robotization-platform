@@ -1,6 +1,7 @@
 # Robot Investment Studio — передача разработки
 
 **Актуальный пакет handoff:** [docs/handoff/00_START_HERE.md](docs/handoff/00_START_HERE.md).
+**Единый файл для передачи другой ИИ-модели:** [PROJECT_HANDOFF_ALL.md](PROJECT_HANDOFF_ALL.md) — все девять разделов подряд.
 Дата: 29 сентября 2026 года; ветка материала-flow: feat/material-flow-demo-v1 (runtime-base 4c10da9 до добавления документации).
 
 | Файл | Что содержит |
